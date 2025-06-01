@@ -90,10 +90,11 @@
   (try
     (spit
       output-yaml-file
-      (populate-yaml-data
-        (yaml/parse-string (slurp yaml-template-file))
-        (parse-sheets (download-google-sheet! google-sheet-id))
-        (get-raw-file-paths path-to-raw-files)))
+      (yaml/generate-string
+        (populate-yaml-data
+          (yaml/parse-string (slurp yaml-template-file))
+          (parse-sheets (download-google-sheet! google-sheet-id))
+          (get-raw-file-paths path-to-raw-files))))
     (catch Exception e (send-error-email! email-to-notify e options))
     (finally (send-success-email! email-to-notify options))))
 
