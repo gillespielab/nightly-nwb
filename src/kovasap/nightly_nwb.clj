@@ -2,8 +2,14 @@
   (:require
    [dk.ative.docjure.spreadsheet :as ss]
    [clojure.string :as string]
+   [clj-yaml.core :as yaml]
+   [postal.core :refer [send-message]]
+   [clojure.java.shell :refer [sh]]
    [clojure.tools.cli :refer [parse-opts]])
   (:gen-class))
+
+
+(def temp-spreadsheet-filepath "out.xlsx")
 
 (defn zip [& colls]
   (partition (count colls) (apply interleave colls)))
@@ -35,16 +41,74 @@
   (into {} (for [sheet (ss/sheet-seq (ss/load-workbook workbook-path))]
              [(.getSheetName sheet) sheet])))
 
-(defn -main
- "I don't do a whole lot ... yet."
- [& args])
+(defn populate-yaml-data
+  [template-yaml-data parsed-sheet-data raw-data-file-paths])
+
+(defn download-google-sheet!
+  "Returns true if the download was successful, false otherwise."
+  [google-sheet-id]
+  (let [{:keys [out exit err]} (sh "gdrive"
+                                   "files"
+                                   "export"
+                                   google-sheet-id
+                                   temp-spreadsheet-filepath
+                                   "--overwrite")]
+    (println out)
+    (println err)
+    (if (= exit 0)
+      (throw Exception. err)
+      temp-spreadsheet-filepath)))
+
+
+(defn get-raw-file-paths
+  [path-to-raw-files]
+  ; TODO turn these into strings instead of java files
+  (file-seq (clojure.java.io/file path-to-raw-files)))
+
+(def nightly-nwb-email "")
+
+(defn send-error-email!
+  [email-to-notify error-text options]
+  (send-message {:from nightly-nwb-email
+                 :to [email-to-notify]
+                 :subject "Nightly NWB ran into issues."
+                 :body (str error-text options)}))
+
+(defn send-success-email!
+  [email-to-notify options]
+  (send-message {:from nightly-nwb-email
+                 :to [email-to-notify]
+                 :subject "Nightly NWB ran successfully."
+                 :body (str options)}))
+
+(defn generate-yaml!
+  [{:keys [google-sheet-id
+           yaml-template-file
+           output-yaml-file
+           path-to-raw-files
+           email-to-notify] :as options}]
+  (try
+    (spit
+      output-yaml-file
+      (populate-yaml-data
+        (yaml/parse-string (slurp yaml-template-file))
+        (parse-sheets (download-google-sheet! google-sheet-id))
+        (get-raw-file-paths path-to-raw-files)))
+    (catch Exception e (send-error-email! email-to-notify e options))
+    (finally (send-success-email! email-to-notify options))))
+
+  
 
 (def cli-options
-   ["-s" "--spreadsheet-file FILE" "Spreadsheet file to parse."
-    :default "out.xlsx"
-    :validate [#(string/ends-with? % ".xlsx") "Must be an .xlsx file."]]
+   ["-g" "--google-sheet-id ID" "ID for google sheet to parse."
+    :default "11tDzUNBq9zIX6_9Rel__fdAUezAQzSnh5AVYzCP060c"]
+   ["-f" "--path-to-raw-files DIRECTORY"
+    "The path to the raw datafiles to be packaged into the NWB file."]
    ["-y" "--yaml-template-file FILE" "Template yaml file to update."
     :default "template.yaml"
+    :validate [#(string/ends-with? % ".yaml") "Must be a .yaml file."]]
+   ["-o" "--output-yaml-file FILE" "Output yaml file path."
+    :default "out.yaml"
     :validate [#(string/ends-with? % ".yaml") "Must be a .yaml file."]]
    ["-e" "--email-to-notify EMAIL" "Email address to send notification emails to."
     :default ""
@@ -54,7 +118,10 @@
 (defn usage [options-summary]
   (->> ["Nightly NWB file generator."
         ""
-        "Usage: nightly-nwb [options]"
+        "Usage: nightly-nwb [options] action"
+        ""
+        "Actions:"
+        "  generate-yaml    Generate a yaml file from a given template."
         ""
         "Options:"
         options-summary]
@@ -69,12 +136,15 @@
   should exit (with an error message, and optional ok status), or a map
   indicating the action the program should take and the options provided."
   [args]
-  (let [{:keys [options errors summary]} (parse-opts args cli-options)]
+  (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)]
     (cond
       (:help options) ; help => exit OK with usage summary
       {:exit-message (usage summary) :ok? true}
       errors ; errors => exit with description of errors
       {:exit-message (error-msg errors)}
+      (and (= 1 (count arguments))
+           (#{"generate-yaml"} (first arguments)))
+      {:action (first arguments) :options options}
       :else ; failed custom validation => exit with usage summary
       {:exit-message (usage summary)})))
 
@@ -87,6 +157,4 @@
     (if exit-message
       (exit (if ok? 0 1) exit-message)
       (case action
-        "start"  (server/start! options)
-        "stop"   (server/stop! options)
-        "status" (server/status! options)))))
+        "generate-yaml"  (generate-yaml! options)))))
