@@ -1,0 +1,1296 @@
+experimenter_name:
+  - Shvartsman, Gabby
+lab: Anna Gillespie Lab
+institution: University of Washington
+experiment_description: Aging cohort
+session_description: Eight arm flexible spatial task
+session_id: teddy_01
+keywords:
+  - young
+  - aging
+subject:
+  description: Fisher Brown Norway
+  genotype: Wild Type
+  sex: M
+  species: Rattus norvegicus
+  subject_id: teddy
+  date_of_birth: 2024-10-02T00:00:00.000Z
+  weight: 400
+data_acq_device:
+  - name: SpikeGadgets
+    system: SpikeGadgets
+    amplifier: Intan
+    adc_circuit: Intan
+cameras:
+  - id: 0
+    meters_per_pixel: 0.0024
+    manufacturer: Manta
+    model: G-158c
+    lens: Theia
+    camera_name: run camera
+  - id: 1
+    meters_per_pixel: 0.000913
+    manufacturer: Manta
+    model: G-158c
+    lens: Theia
+    camera_name: sleep camera
+tasks:
+  - task_name: Eight arm flexible spatial task
+    task_description: goal_delay
+    task_environment: Track
+    camera_id:
+      - 0
+    task_epochs:
+      - 2
+      - 4
+  - task_name: Sleep
+    task_description: The animal sleeps in a small empty box
+    task_environment: Sleep box
+    camera_id:
+      - 1
+    task_epochs:
+      - 1
+      - 3
+      - 5
+associated_files:
+  - name: statescript_s1
+    description: Statescript log s1
+    path: /home/gl-willow/banyan/raw/gabby/teddy/20250530/20250530_teddy_01_s1.stateScriptLog
+    task_epochs: 1
+  - name: statescript_r1
+    description: Statescript log r1
+    path: /home/gl-willow/banyan/raw/gabby/teddy/20250530/20250530_teddy_02_r1.stateScriptLog
+    task_epochs: 2
+  - name: statescript_s2
+    description: Statescript log s2
+    path: /home/gl-willow/banyan/raw/gabby/teddy/20250530/20250530_teddy_03_s2.stateScriptLog
+    task_epochs: 3
+  - name: statescript_r2
+    description: Statescript log r2
+    path: /home/gl-willow/banyan/raw/gabby/teddy/20250530/20250530_teddy_04_r2.stateScriptLog
+    task_epochs: 4
+  - name: statescript_s3
+    description: Statescript log s3
+    path: /home/gl-willow/banyan/raw/gabby/teddy/20250530/20250530_teddy_05_s3.stateScriptLog
+    task_epochs: 5
+associated_video_files:
+  - name: 20250530_teddy_01_s1.1.h264
+    camera_id: 1
+    task_epochs: 1
+  - name: 20250530_teddy_02_r1.1.h264
+    camera_id: 0
+    task_epochs: 2
+  - name: 20250530_teddy_03_s2.1.h264
+    camera_id: 1
+    task_epochs: 3
+  - name: 20250530_teddy_04_r2.1.h264
+    camera_id: 0
+    task_epochs: 4
+  - name: 20250530_teddy_05_s3.1.h264
+    camera_id: 1
+    task_epochs: 5
+units:
+  analog: unspecified
+  behavioral_events: unspecified
+times_period_multiplier: 1.5
+raw_data_to_volts: 1.95e-7
+default_header_file_path: /home/gl-willow/banyan/raw/gabby/teddy/20250530/
+behavioral_events:
+  - description: Dout1
+    name: homelight
+  - description: Din1
+    name: homebeam
+  - description: Dout2
+    name: Rlight
+  - description: Din2
+    name: Rbeam
+  - description: Dout3
+    name: Wlight
+  - description: Din3
+    name: Wbeam
+  - description: Dout4
+    name: arm1light
+  - description: Din4
+    name: arm1beam
+  - description: Dout5
+    name: arm2light
+  - description: Din5
+    name: arm2beam
+  - description: Dout6
+    name: arm3light
+  - description: Din6
+    name: arm3beam
+  - description: Dout7
+    name: arm4light
+  - description: Din7
+    name: arm4beam
+  - description: Dout8
+    name: arm5light
+  - description: Din8
+    name: arm5beam
+  - description: Dout9
+    name: arm6light
+  - description: Din9
+    name: arm6beam
+  - description: Dout10
+    name: arm7light
+  - description: Din10
+    name: arm7beam
+  - description: Dout11
+    name: arm8light
+  - description: Din11
+    name: arm8beam
+  - description: Dout17
+    name: homepump
+  - description: Dout18
+    name: Rpump
+  - description: Dout19
+    name: Wpump
+  - description: Dout20
+    name: arm1pump
+  - description: Dout21
+    name: arm2pump
+  - description: Dout22
+    name: arm3pump
+  - description: Dout23
+    name: arm4pump
+  - description: Dout24
+    name: arm5pump
+  - description: Dout25
+    name: arm6pump
+  - description: Dout26
+    name: arm7pump
+  - description: Dout27
+    name: arm8pump
+  - description: Din31
+    name: camera ticks sleep
+  - description: Din32
+    name: camera ticks run
+device:
+  name:
+    - Trodes
+electrode_groups:
+  - id: 0
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 1
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 2
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 3
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 4
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 5
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 6
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 7
+    location: can1ref
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 8
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 9
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 10
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 11
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 12
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 13
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 14
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 15
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 16
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 17
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 18
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 19
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 20
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 21
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 22
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 23
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 24
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 25
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 26
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 27
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 28
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 29
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 30
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 31
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 32
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 33
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 34
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 35
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 36
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 37
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 38
+    location: can2ref
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 39
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 40
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 41
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 42
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 43
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 44
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 45
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 46
+    location: ca1
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 47
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 48
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 49
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 50
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 51
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 52
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 53
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 54
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: -5
+    units: μm
+  - id: 55
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 56
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 57
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 58
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 59
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 60
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 61
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 62
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+  - id: 63
+    location: "''"
+    device_type: tetrode_12.5
+    description: tetrode
+    targeted_location: Cornu ammonis 1 (CA1)
+    targeted_x: 0
+    targeted_y: 0
+    targeted_z: 0
+    units: μm
+ntrode_electrode_group_channel_map:
+  - ntrode_id: 1
+    electrode_group_id: 0
+    bad_channels:
+      - 1
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 2
+    electrode_group_id: 1
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 3
+    electrode_group_id: 2
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 4
+    electrode_group_id: 3
+    bad_channels:
+      - 2
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 5
+    electrode_group_id: 4
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 6
+    electrode_group_id: 5
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 7
+    electrode_group_id: 6
+    bad_channels:
+      - 2
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 8
+    electrode_group_id: 7
+    bad_channels:
+      - 1
+      - 2
+      - 3
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 9
+    electrode_group_id: 8
+    bad_channels:
+      - 0
+      - 1
+      - 2
+      - 3
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 10
+    electrode_group_id: 9
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 11
+    electrode_group_id: 10
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 12
+    electrode_group_id: 11
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 13
+    electrode_group_id: 12
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 14
+    electrode_group_id: 13
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 15
+    electrode_group_id: 14
+    bad_channels:
+      - 2
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 16
+    electrode_group_id: 15
+    bad_channels:
+      - 2
+      - 3
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 17
+    electrode_group_id: 16
+    bad_channels:
+      - 1
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 18
+    electrode_group_id: 17
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 19
+    electrode_group_id: 18
+    bad_channels:
+      - 2
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 20
+    electrode_group_id: 19
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 21
+    electrode_group_id: 20
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 22
+    electrode_group_id: 21
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 23
+    electrode_group_id: 22
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 24
+    electrode_group_id: 23
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 25
+    electrode_group_id: 24
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 26
+    electrode_group_id: 25
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 27
+    electrode_group_id: 26
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 28
+    electrode_group_id: 27
+    bad_channels:
+      - 0
+      - 1
+      - 2
+      - 3
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 29
+    electrode_group_id: 28
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 30
+    electrode_group_id: 29
+    bad_channels:
+      - 0
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 31
+    electrode_group_id: 30
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 32
+    electrode_group_id: 31
+    bad_channels:
+      - 2
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 33
+    electrode_group_id: 32
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 34
+    electrode_group_id: 33
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 35
+    electrode_group_id: 34
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 36
+    electrode_group_id: 35
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 37
+    electrode_group_id: 36
+    bad_channels:
+      - 2
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 38
+    electrode_group_id: 37
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 39
+    electrode_group_id: 38
+    bad_channels:
+      - 0
+      - 2
+      - 3
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 40
+    electrode_group_id: 39
+    bad_channels:
+      - 1
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 41
+    electrode_group_id: 40
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 42
+    electrode_group_id: 41
+    bad_channels:
+      - 0
+      - 1
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 43
+    electrode_group_id: 42
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 44
+    electrode_group_id: 43
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 45
+    electrode_group_id: 44
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 46
+    electrode_group_id: 45
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 47
+    electrode_group_id: 46
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 48
+    electrode_group_id: 47
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 49
+    electrode_group_id: 48
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 50
+    electrode_group_id: 49
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 51
+    electrode_group_id: 50
+    bad_channels:
+      - 0
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 52
+    electrode_group_id: 51
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 53
+    electrode_group_id: 52
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 54
+    electrode_group_id: 53
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 55
+    electrode_group_id: 54
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 56
+    electrode_group_id: 55
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 57
+    electrode_group_id: 56
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 58
+    electrode_group_id: 57
+    bad_channels:
+      - 0
+      - 1
+      - 2
+      - 3
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 59
+    electrode_group_id: 58
+    bad_channels:
+      - 0
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 60
+    electrode_group_id: 59
+    bad_channels:
+      - 3
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 61
+    electrode_group_id: 60
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 62
+    electrode_group_id: 61
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 63
+    electrode_group_id: 62
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3
+  - ntrode_id: 64
+    electrode_group_id: 63
+    bad_channels: []
+    map:
+      "0": 0
+      "1": 1
+      "2": 2
+      "3": 3

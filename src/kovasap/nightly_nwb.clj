@@ -5,6 +5,7 @@
    [clj-yaml.core :as yaml]
    [postal.core :refer [send-message]]
    [clojure.java.shell :refer [sh]]
+   [clojure.java.io]
    [clojure.tools.cli :refer [parse-opts]])
   (:gen-class))
 
@@ -56,7 +57,7 @@
     (println out)
     (println err)
     (if (= exit 0)
-      (throw Exception. err)
+      (throw (Exception. err))
       temp-spreadsheet-filepath)))
 
 
@@ -98,23 +99,21 @@
     (catch Exception e (send-error-email! email-to-notify e options))
     (finally (send-success-email! email-to-notify options))))
 
-  
-
 (def cli-options
-   ["-g" "--google-sheet-id ID" "ID for google sheet to parse."
-    :default "11tDzUNBq9zIX6_9Rel__fdAUezAQzSnh5AVYzCP060c"]
-   ["-f" "--path-to-raw-files DIRECTORY"
-    "The path to the raw datafiles to be packaged into the NWB file."]
-   ["-y" "--yaml-template-file FILE" "Template yaml file to update."
-    :default "template.yaml"
-    :validate [#(string/ends-with? % ".yaml") "Must be a .yaml file."]]
-   ["-o" "--output-yaml-file FILE" "Output yaml file path."
-    :default "out.yaml"
-    :validate [#(string/ends-with? % ".yaml") "Must be a .yaml file."]]
-   ["-e" "--email-to-notify EMAIL" "Email address to send notification emails to."
-    :default ""
-    :validate [#(re-matches #".+\@.+\..+" email) "Must be a valid email."]]
-   ["-h" "--help"])
+   [["-g" "--google-sheet-id ID" "ID for google sheet to parse."
+     :default "11tDzUNBq9zIX6_9Rel__fdAUezAQzSnh5AVYzCP060c"]
+    ["-f" "--path-to-raw-files DIRECTORY"
+     "The path to the raw datafiles to be packaged into the NWB file."]
+    ["-y" "--yaml-template-file FILE" "Template yaml file to update."
+     :default "template.yaml"
+     :validate [#(string/ends-with? % ".yaml") "Must be a .yaml file."]]
+    ["-o" "--output-yaml-file FILE" "Output yaml file path."
+     :default "out.yaml"
+     :validate [#(string/ends-with? % ".yaml") "Must be a .yaml file."]]
+    ["-e" "--email-to-notify EMAIL" "Email address to send notification emails to."
+     :default ""
+     :validate [#(re-matches #".+\@.+\..+" %) "Must be a valid email."]]
+    ["-h" "--help"]])
 
 (defn usage [options-summary]
   (->> ["Nightly NWB file generator."
