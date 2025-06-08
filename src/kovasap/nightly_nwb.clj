@@ -85,10 +85,13 @@
   ; TODO turn these into strings instead of java files
   (file-seq (clojure.java.io/file path-to-raw-files)))
 
+; TODO update this so that it updates the yaml instead of just copying the
+; template. 
 (defn generate-single-yaml
   [experimenter subject date behavior-data adjusting-data template-yaml-data data-filepaths]
   template-yaml-data)
 
+; TODO update this so that it actually lists the files that need generation.
 (defn determine-dates-to-process
   "Return list of dates formatted like YYYYMMDD for which there are no yaml files in their directory."
   [experimenter subject path-to-raw-files]
