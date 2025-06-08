@@ -87,8 +87,8 @@
 
 ; TODO update this so that it updates the yaml instead of just copying the
 ; template. 
-(defn generate-single-yaml
-  [experimenter subject date behavior-data adjusting-data template-yaml-data data-filepaths]
+(defn generate-single-yaml-data
+  [data-spec behavior-data adjusting-data template-yaml-data data-filepaths]
   template-yaml-data)
 
 ; TODO update this so that it actually lists the files that need generation.
@@ -101,37 +101,56 @@
   [yaml-data filepath]
   (spit filepath (yaml/generate-string yaml-data)))
 
+(def DataSpec
+  [:map
+   [:date :string]
+   [:experimenter :string]
+   [:subject :string]
+   [:path-to-raw-files :string]])
+
+(defn generate-single-yaml!
+  [data-spec
+   spreadsheet-file
+   template-yaml-file
+   output-yaml-file]
+  (let [parsed-sheets (parse-sheets spreadsheet-file)]
+    (write-yaml-data-to-file
+      (generate-single-yaml-data
+        data-spec
+        (get parsed-sheets
+             (replace-placeholders behavior-sheet-name data-spec))
+        (get parsed-sheets
+             (replace-placeholders adjusting-sheet-name data-spec))
+        (yaml/parse-string
+          (slurp (replace-placeholders template-yaml-file data-spec)))
+        (get-raw-file-paths (:path-to-raw-files data-spec)))
+      (replace-placeholders output-yaml-file data-spec))))
+
 (defn generate-yaml!
   "Returns map like {:success? true :failure-message ''}."
   [{:keys [google-sheet-id
            experimenter
            subject
-           yaml-template-file
+           dates
+           template-yaml-file
            output-yaml-file
            path-to-raw-files]
     :as   options}]
-  (let [parsed-sheets (parse-sheets (download-google-sheet! google-sheet-id))]
-    (println "Starting date processing...")
-    (for [date (determine-dates-to-process experimenter
+  (println "Starting date processing...")
+  (for [date (if (empty? dates)
+               (determine-dates-to-process experimenter
                                            subject
                                            path-to-raw-files)
-          :let [options (assoc options :date date)]]
-      (do (println (str "Processing data for " date "..."))
-          (try (write-yaml-data-to-file
-                 (generate-single-yaml
-                   experimenter
-                   subject
-                   date
-                   (get parsed-sheets
-                        (replace-placeholders behavior-sheet-name options))
-                   (get parsed-sheets
-                        (replace-placeholders adjusting-sheet-name options))
-                   (yaml/parse-string
-                     (slurp (replace-placeholders yaml-template-file options)))
-                   (get-raw-file-paths path-to-raw-files))
-                 (replace-placeholders output-yaml-file options))
-               (catch Exception e {:success? false :failure-message e})
-               (finally {:success? true}))))))
+               dates)
+        :let [data-spec (assoc options :date date)]]
+    (do (println (str "Processing data for " date "..."))
+        (try (generate-single-yaml! data-spec
+                                    (download-google-sheet! google-sheet-id)
+                                    template-yaml-file
+                                    output-yaml-file
+                                    path-to-raw-files)
+             (catch Exception e {:success? false :failure-message e})
+             (finally {:success? true})))))
 
 (def cli-options
    [["-g" "--google-sheet-id ID" "ID for google sheet to parse."
@@ -141,7 +160,13 @@
      :default "banyan/raw/"]
     ["-s" "--subject SUBJECT" "Subject to process data for."]
     ["-e" "--experimenter EXPERIMENTER" "Experimenter to process data for."]
-    ["-y" "--yaml-template-file FILE" "Template yaml file to update."
+    ["-d" "--dates DATE"
+     "Date(s) to process data for, separated by commas.  If not specified, "
+     "will automatically process data for dates that do not already have a "
+     "yaml file generated for them."
+     :default []
+     :parse-fn #(string/split % #",")]
+    ["-y" "--template-yaml-file FILE" "Template yaml file to update."
      :default default-template-yaml-filepath
      :validate [#(string/ends-with? % ".yml") "Must be a .yml file."]]
     ["-o" "--output-yaml-file FILE" "Output yaml file path."
