@@ -7,6 +7,8 @@
    [clojure.java.shell :refer [sh]]
    [clojure.java.io]
    [clojure.tools.cli :refer [parse-opts]])
+  (:import [java.text SimpleDateFormat]
+           [org.apache.poi.ss.usermodel DateUtil CellType])
   (:gen-class))
 
 
@@ -30,15 +32,23 @@
                   #"\{\{([a-zA-Z\-]+)\}\}"
                   (fn [[_match placeholder]]
                     (str (get arg-map (keyword placeholder))))))
-   
-(replace-placeholders "My name is {{name}} and I am {{age}} years old." {:name "Bob" :age 25})
 
 (defn zip [& colls]
   (partition (count colls) (apply interleave colls)))
 
+(defn get-cell-value
+  [cell]
+  (cond (nil? cell) nil
+        (and 
+          (= CellType/NUMERIC (.getCellType cell))
+          (DateUtil/isCellDateFormatted cell))
+        (.format (SimpleDateFormat. "yyyyMMdd") (.getDateCellValue cell))
+        (= CellType/NUMERIC (.getCellType cell)) (.getNumericCellValue cell)
+        :else (.toString cell)))
+
 (defn get-col-header-values
   [sheet]
-  (map #(.getStringCellValue %) (ss/cell-seq (first (ss/row-seq sheet)))))
+  (map get-cell-value (ss/cell-seq (first (ss/row-seq sheet)))))
 
 (defn get-rows-data
   "Returns data like
@@ -47,21 +57,25 @@
   [sheet]
   (let [col-header-values (get-col-header-values sheet)]
     (flatten
-      (for [row (rest (ss/row-seq sheet))]
+      (for [row  (remove nil? (rest (ss/row-seq sheet)))
+            :let [row-header (get-cell-value (first (ss/cell-seq row)))]]
         (for [[col-header cell] (zip (rest col-header-values)
-                                     (rest (ss/cell-seq row)))]
+                                     (rest (ss/cell-seq row)))
+              :when (and (not (empty? col-header)) (not (empty? row-header)))]
           {:col-header col-header
-           :row-header (.getStringCellValue (first (ss/cell-seq row)))
-           :value      (.toString cell)
-           :color      (as-> cell c
-                         (.getCellStyle c)
-                         (.getFillBackgroundXSSFColor c)
-                         (if (nil? c) nil (.getARGB c)))})))))
+           :row-header row-header
+           :value      (get-cell-value cell)
+           :color      (if (nil? cell)
+                         nil
+                         (as-> cell c
+                           (.getCellStyle c)
+                           (.getFillBackgroundXSSFColor c)
+                           (if (nil? c) nil (.getARGB c))))})))))
 
 (defn parse-sheets
   [workbook-path]
   (into {} (for [sheet (ss/sheet-seq (ss/load-workbook workbook-path))]
-             [(.getSheetName sheet) sheet])))
+             [(.getSheetName sheet) (get-rows-data sheet)])))
 
 (defn download-google-sheet!
   "Returns true if the download was successful, false otherwise."
@@ -85,11 +99,29 @@
   ; TODO turn these into strings instead of java files
   (file-seq (clojure.java.io/file path-to-raw-files)))
 
+(defn get-session-number
+  [date behavior-data]
+  (first (filter (fn [{:keys [col-header row-header]}]
+                   (and (= col-header "session")
+                        (= row-header date)))
+                 behavior-data)))
+
+(defn get-session-id
+  [subject date behavior-data]
+  (format "%s_%02d"
+          subject
+          (int (:value (get-session-number date behavior-data)))))
+
 ; TODO update this so that it updates the yaml instead of just copying the
-; template. 
+; template.
 (defn generate-single-yaml-data
-  [data-spec behavior-data adjusting-data template-yaml-data data-filepaths]
-  template-yaml-data)
+  [{:keys [subject date experimenter path-to-raw-files]}
+   behavior-data
+   adjusting-data
+   template-yaml-data
+   data-filepaths]
+  (-> template-yaml-data
+      (assoc :session_id (get-session-id subject date behavior-data))))
 
 ; TODO update this so that it actually lists the files that need generation.
 (defn determine-dates-to-process

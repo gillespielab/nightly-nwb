@@ -43,6 +43,13 @@
          :line
          [:nest (kaocha.output/format-doc (:actual m) printer)]]))))
 
+(deftest test-replace-placeholders
+  (testing "replace-placeholders works"
+    (is (= "My name is Bob and I am 25 years old."
+           (replace-placeholders
+             "My name is {{name}} and I am {{age}} years old."
+             {:name "Bob" :age 25})))))
+
 (defn clean-up-generated-files
   []
   (delete-file "testdata/raw/gabby/teddy/20250602/20250602_teddy_metadata.yml" :silently true))
