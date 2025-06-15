@@ -44,24 +44,29 @@
           (DateUtil/isCellDateFormatted cell))
         (.format (SimpleDateFormat. "yyyyMMdd") (.getDateCellValue cell))
         (= CellType/NUMERIC (.getCellType cell)) (.getNumericCellValue cell)
+        (empty? (.toString cell)) nil
         :else (.toString cell)))
 
 (defn get-col-header-values
-  [sheet]
-  (map get-cell-value (ss/cell-seq (first (ss/row-seq sheet)))))
+  "Gets column header values for the given sheet.  The given column-row-idx 
+  will be used to determine which row should be considered the header row."
+  ([sheet column-row-idx]
+   (map get-cell-value (ss/cell-seq (nth (ss/row-seq sheet) column-row-idx))))
+  ([sheet] (get-col-header-values sheet 0)))
 
 (defn get-rows-data
   "Returns data like
   [{:col-header 'first' :row-header 'date' :value 'val' :color [a, r, g, b]} ...]
   "
-  [sheet]
-  (let [col-header-values (get-col-header-values sheet)]
+  [sheet column-row-idx]
+  (let [col-header-values (get-col-header-values sheet column-row-idx)]
     (flatten
       (for [row  (remove nil? (rest (ss/row-seq sheet)))
-            :let [row-header (get-cell-value (first (ss/cell-seq row)))]]
+            :let [row-header (get-cell-value (first (ss/cell-seq row)))]
+            :when (not (nil? row-header))]
         (for [[col-header cell] (zip (rest col-header-values)
                                      (rest (ss/cell-seq row)))
-              :when (and (not (empty? col-header)) (not (empty? row-header)))]
+              :when (not (nil? col-header))]
           {:col-header col-header
            :row-header row-header
            :value      (get-cell-value cell)
@@ -70,12 +75,12 @@
                          (as-> cell c
                            (.getCellStyle c)
                            (.getFillBackgroundXSSFColor c)
-                           (if (nil? c) nil (.getARGB c))))})))))
+                           (if (nil? c) nil (vec (.getARGB c)))))})))))
 
-(defn parse-sheets
+(defn get-sheets-by-name
   [workbook-path]
   (into {} (for [sheet (ss/sheet-seq (ss/load-workbook workbook-path))]
-             [(.getSheetName sheet) (get-rows-data sheet)])))
+             [(.getSheetName sheet) sheet])))
 
 (defn download-google-sheet!
   "Returns true if the download was successful, false otherwise."
@@ -95,9 +100,10 @@
 
 
 (defn get-raw-file-paths
-  [path-to-raw-files]
-  ; TODO turn these into strings instead of java files
-  (file-seq (clojure.java.io/file path-to-raw-files)))
+  [{:keys [date path-to-raw-files]}]
+  (filter
+    #(string/includes? (.getAbsolutePath %) date)
+    (file-seq (clojure.java.io/file path-to-raw-files))))
 
 (defn get-session-number
   [date behavior-data]
@@ -112,16 +118,213 @@
           subject
           (int (:value (get-session-number date behavior-data)))))
 
-; TODO update this so that it updates the yaml instead of just copying the
-; template.
+(def state-script-log-regex
+  #"(.+)_(.+)_(.+)_(.+)\.stateScriptLog") 
+
+(defn state-script-log-file->data
+  [state-script-log-file]
+  (if-some [[_whole-filename-match _date _subject task-epoch task-code]
+            (re-matches state-script-log-regex
+                        (.getName state-script-log-file))]
+   {:name (str "statescript_" task-code)
+    :description (str "Statescript log " task-code)
+    :path (.getAbsolutePath state-script-log-file)
+    :task_epochs (Integer/parseInt task-epoch)}
+   nil))
+
+(defn generate-associated-files
+  [data-filepaths]
+  (sort-by :task_epochs
+           (remove nil?
+             (map #(state-script-log-file->data %) data-filepaths))))
+
+(def video-file-regex
+  #"(.+)_(.+)_(.+)_(.+)\.2\.h264") 
+
+(defn video-file->data
+  [video-file task-letter-to-camera-ids]
+  (if-some [[whole-filename-match _date _subject task-epoch task-code]
+            (re-matches video-file-regex (.getName video-file))]
+    {:name whole-filename-match
+     :camera_id (get task-letter-to-camera-ids (subs task-code 0 1))
+     :task_epochs (Integer/parseInt task-epoch)}
+    nil))
+
+(defn generate-associated-video-files
+  [data-filepaths task-letter-to-camera-ids]
+  (sort-by :task_epochs
+           (remove nil?
+             (map #(video-file->data % task-letter-to-camera-ids)
+               data-filepaths))))
+
+
+(defn task-name->letter
+  [task-name]
+  (case task-name
+    "Sleep" "s" 
+    "r"))
+
+
+(defn get-task-letter-to-camera-ids
+  [tasks]
+  (into {}
+        (for [{:keys [task_name camera_id]} tasks]
+          [(task-name->letter task_name) (first camera_id)])))
+
+(defn state-script-log-file-to-letter-epoch
+  [state-script-log-file]
+  (if-some [[_whole-filename-match _date _subject task-epoch task-code]
+            (re-matches state-script-log-regex
+                        (.getName state-script-log-file))]
+    {:task-letter (subs task-code 0 1) :epoch (Integer/parseInt task-epoch)}
+    nil))
+
+(defn get-task-letter-to-epochs
+  [data-filepaths]
+  (as-> data-filepaths d 
+    (map state-script-log-file-to-letter-epoch d)
+    (remove nil? d)
+    (group-by :task-letter d)
+    (update-vals d #(map :epoch %))))
+          
+
+(defn add-epochs-to-task
+  [{:keys [task_name] :as task} task-letter-to-epochs]
+  (assoc task
+    :task_epochs (get task-letter-to-epochs (task-name->letter task_name))))
+
+(defn update-task-data
+  [task-data task-letter-to-epochs]
+  (sort-by #(first (:camera_id %))
+           (map #(add-epochs-to-task % task-letter-to-epochs) task-data)))
+
+(defn color->location
+  [color]
+  ; I tried case here, but it fails to match the vectors sometimes for a
+  ; reason i don't understand.
+  (cond
+    ; Green
+    (= color [-1 -74 -41 -88]) "ca1"
+    ; Blue
+    (= color [-1 -97 -59 -24]) "can1ref"
+    ; Purple
+    (= color [-1 -76 -89 -42]) "can2ref"
+    ; Everything else 
+    :else "''"))
+
+(defn cell->electrode-group
+  [{:keys [col-header color]}]
+  ; dec since yaml electrodes are indexed by 0, but spreadsheet is indexed by
+  ; 1!
+  {:id (dec col-header)  
+   :location (color->location color)})
+
+(defn clean-spreadsheet-number
+  [n]
+  (if (number? n)
+    (int n)
+    (try (Integer/parseInt n) (catch Exception _ nil))))
+
+(defn generate-electrode-groups
+  [date adjusting-data]
+  (as-> adjusting-data d
+   (filter #(= date (:row-header %)) d)
+   (map #(update % :col-header clean-spreadsheet-number) d)
+   (filter #(number? (:col-header %)) d)
+   (map cell->electrode-group d)
+   (sort-by :id d)))
+
+(defn merge-maps
+  "Merges maps with matching id-key from maps2 into matching maps1 entries.
+
+  Non matching maps2 entries will be ignored."
+  [maps1 maps2 id-key]
+  (let [maps2-by-key (group-by id-key maps2)]
+    (into []
+          (for [m maps1]
+            (apply merge m (get maps2-by-key (id-key m)))))))
+
+(defn update-electrode-groups
+  [existing-electrode-groups date adjusting-data]
+  (sort-by :id
+           (merge-maps existing-electrode-groups
+                       (generate-electrode-groups date adjusting-data)
+                       :id)))
+
+(defn extract-channel-id
+  [s]
+  (try
+    (Integer/parseInt
+      (last (re-matches #"ch(\d)" s)))
+    (catch Exception _ nil)))
+
+(defn generate-channel-map-from-dead-channels
+  [adjusting-data]
+  (as-> adjusting-data d
+    (filter #(= "dead channels" (:row-header %)) d)
+    (map #(update % :col-header clean-spreadsheet-number) d)
+    (filter #(number? (:col-header %)) d)
+    (remove #(nil? (extract-channel-id (:value %))) d)
+    (map (fn [{:keys [col-header value]}]
+           {:ntrode_id col-header
+            :electrode_group_id (dec col-header)
+            :bad_channels [(dec (extract-channel-id value))]})
+      d)
+    (sort-by :ntrode_id d)))
+
+(defn extract-ref-channel-id
+  [s]
+  (try
+    (Integer/parseInt
+     (last (re-matches #"ref_ch: ch(\d)" s)))
+    (catch Exception _ nil)))
+
+(defn generate-channel-map-from-ref-ch
+  [date adjusting-data]
+  (as-> adjusting-data d
+    (filter #(= date (:row-header %)) d)
+    (map #(update % :col-header clean-spreadsheet-number) d)
+    (filter #(number? (:col-header %)) d)
+    (remove #(nil? (extract-ref-channel-id (:value %))) d)
+    (map (fn [{:keys [col-header value]}]
+           {:ntrode_id col-header
+            :electrode_group_id (dec col-header)
+            :bad_channels [(dec (extract-ref-channel-id value))]})
+      d)
+    (sort-by :ntrode_id d)))
+
+(defn update-ntrode-electrode-group-channel-map
+  [existing-channel-map date adjusting-data]
+  (sort-by :ntrode_id
+           (merge-maps
+             existing-channel-map
+             (merge-maps
+               (generate-channel-map-from-dead-channels adjusting-data)
+               (generate-channel-map-from-ref-ch date adjusting-data)
+               :ntrode_id)
+             :ntrode_id)))
+ 
 (defn generate-single-yaml-data
-  [{:keys [subject date experimenter path-to-raw-files]}
+  [{:keys [subject date experimenter _path-to-raw-files]}
    behavior-data
    adjusting-data
    template-yaml-data
    data-filepaths]
-  (-> template-yaml-data
-      (assoc :session_id (get-session-id subject date behavior-data))))
+  (->
+    template-yaml-data
+    (assoc :default_header_file_path
+           (str experimenter "/" subject "/" date "/"))
+    (update :electrode_groups #(update-electrode-groups % date adjusting-data))
+    (update :ntrode_electrode_group_channel_map
+            #(update-ntrode-electrode-group-channel-map % date adjusting-data))
+    (update :tasks
+            #(update-task-data % (get-task-letter-to-epochs data-filepaths)))
+    (assoc :session_id (get-session-id subject date behavior-data))
+    (assoc :associated_files (generate-associated-files data-filepaths))
+    (assoc :associated_video_files (generate-associated-video-files
+                                     data-filepaths
+                                     (get-task-letter-to-camera-ids
+                                       (:tasks template-yaml-data))))))
 
 ; TODO update this so that it actually lists the files that need generation.
 (defn determine-dates-to-process
@@ -141,21 +344,22 @@
    [:path-to-raw-files :string]])
 
 (defn generate-single-yaml!
-  [data-spec
-   spreadsheet-file
-   template-yaml-file
-   output-yaml-file]
-  (let [parsed-sheets (parse-sheets spreadsheet-file)]
+  [data-spec spreadsheet-file template-yaml-file output-yaml-file]
+  (let [sheets-by-name (get-sheets-by-name spreadsheet-file)]
     (write-yaml-data-to-file
       (generate-single-yaml-data
         data-spec
-        (get parsed-sheets
-             (replace-placeholders behavior-sheet-name data-spec))
-        (get parsed-sheets
-             (replace-placeholders adjusting-sheet-name data-spec))
-        (yaml/parse-string
-          (slurp (replace-placeholders template-yaml-file data-spec)))
-        (get-raw-file-paths (:path-to-raw-files data-spec)))
+        (get-rows-data (get sheets-by-name
+                            (replace-placeholders behavior-sheet-name
+                                                  data-spec))
+                       0)
+        (get-rows-data (get sheets-by-name
+                            (replace-placeholders adjusting-sheet-name
+                                                  data-spec))
+                       3)
+        (yaml/parse-string (slurp (replace-placeholders template-yaml-file
+                                                        data-spec)))
+        (get-raw-file-paths data-spec))
       (replace-placeholders output-yaml-file data-spec))))
 
 (defn generate-yaml!
@@ -179,8 +383,7 @@
         (try (generate-single-yaml! data-spec
                                     (download-google-sheet! google-sheet-id)
                                     template-yaml-file
-                                    output-yaml-file
-                                    path-to-raw-files)
+                                    output-yaml-file)
              (catch Exception e {:success? false :failure-message e})
              (finally {:success? true})))))
 

@@ -54,6 +54,8 @@
   []
   (delete-file "testdata/raw/gabby/teddy/20250602/20250602_teddy_metadata.yml" :silently true))
 
+; ----------------------------- Tests ------------------------------------
+
 (deftest test-generate-yaml!
   (testing "Generate yaml works end to end for one file"
     (do
