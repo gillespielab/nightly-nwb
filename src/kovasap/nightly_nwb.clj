@@ -446,7 +446,7 @@
       {:exit-message (usage summary)})))
 
 
-(def nightly-nwb-email "")
+(def nightly-nwb-email "test@nightly-nwb.com")
 
 (defn send-email-report!
   [email-to-notify status-map]
@@ -454,6 +454,9 @@
                  :to [email-to-notify]
                  :subject "Nightly NWB ran into issues."
                  :body ""}))
+
+; TODO read https://andersmurphy.com/2022/06/14/clojure-sending-emails-with-postal-and-gmail-smtp.html
+; (send-email-report! "kovas.palunas@gmail.com" {})
 
 (defn report-errors!
   [email-to-notify status-map]
