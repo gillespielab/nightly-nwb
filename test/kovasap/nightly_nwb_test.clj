@@ -1,5 +1,6 @@
 (ns kovasap.nightly-nwb-test
   (:require [clojure.test :refer [deftest is testing]]
+            [clojure.string :as string]
             [clojure.java.io :refer [delete-file]]
             [clj-yaml.core :as yaml]
             [kaocha.output]
@@ -43,6 +44,12 @@
          :line
          [:nest (kaocha.output/format-doc (:actual m) printer)]]))))
 
+(defn clean-up-generated-files
+  []
+  (delete-file "testdata/raw/gabby/teddy/20250602/20250602_teddy_metadata.yml" :silently true))
+
+; ----------------------------- Tests ------------------------------------
+
 (deftest test-replace-placeholders
   (testing "replace-placeholders works"
     (is (= "My name is Bob and I am 25 years old."
@@ -50,25 +57,26 @@
              "My name is {{name}} and I am {{age}} years old."
              {:name "Bob" :age 25})))))
 
-(defn clean-up-generated-files
-  []
-  (delete-file "testdata/raw/gabby/teddy/20250602/20250602_teddy_metadata.yml" :silently true))
-
-; ----------------------------- Tests ------------------------------------
-
 (deftest test-generate-yaml!
   (testing "Generate yaml works end to end for one file"
     (do
       (clean-up-generated-files)
-      (generate-single-yaml!
-        {:experimenter "gabby" :subject "teddy" :date "20250602" :path-to-raw-files "testdata/raw"}
-        "testdata/example.xlsx"
-        default-template-yaml-filepath
-        default-output-yaml-filepath)
+      (generate-single-yaml! {:experimenter "gabby"
+                              :subject      "teddy"
+                              :date         "20250602"
+                              :path-to-raw-files "testdata/raw"}
+                             "testdata/example.xlsx"
+                             default-template-yaml-filepath
+                             default-output-yaml-filepath)
       (is
         (=
-          (yaml/parse-string (slurp
-                               "testdata/20250602_teddy_metadata_golden.yml"))
+          (yaml/parse-string
+            (string/replace
+              (slurp "testdata/20250602_teddy_metadata_golden.yml")
+              ; Working directory where golden file was generated
+              "/home/gl-willow/banyan/"
+              ; Current working directory with testdata
+              (str (.getAbsolutePath (java.io.File. "")) "/testdata/")))
           (yaml/parse-string
             (slurp
               "testdata/raw/gabby/teddy/20250602/20250602_teddy_metadata.yml")))))))

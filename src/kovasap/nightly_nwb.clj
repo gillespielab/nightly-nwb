@@ -171,18 +171,21 @@
         (for [{:keys [task_name camera_id]} tasks]
           [(task-name->letter task_name) (first camera_id)])))
 
-(defn state-script-log-file-to-letter-epoch
-  [state-script-log-file]
+(def rec-regex
+  #"(.+)_(.+)_(.+)_(.+)\.rec") 
+
+(defn rec-file-to-letter-epoch
+  [rec-file]
   (if-some [[_whole-filename-match _date _subject task-epoch task-code]
-            (re-matches state-script-log-regex
-                        (.getName state-script-log-file))]
+            (re-matches rec-regex
+                        (.getName rec-file))]
     {:task-letter (subs task-code 0 1) :epoch (Integer/parseInt task-epoch)}
     nil))
 
 (defn get-task-letter-to-epochs
   [data-filepaths]
   (as-> data-filepaths d 
-    (map state-script-log-file-to-letter-epoch d)
+    (map rec-file-to-letter-epoch d)
     (remove nil? d)
     (group-by :task-letter d)
     (update-vals d #(map :epoch %))))
@@ -191,7 +194,8 @@
 (defn add-epochs-to-task
   [{:keys [task_name] :as task} task-letter-to-epochs]
   (assoc task
-    :task_epochs (get task-letter-to-epochs (task-name->letter task_name))))
+    :task_epochs (sort (get task-letter-to-epochs
+                            (task-name->letter task_name)))))
 
 (defn update-task-data
   [task-data task-letter-to-epochs]
@@ -305,15 +309,23 @@
              :ntrode_id)))
  
 (defn generate-single-yaml-data
-  [{:keys [subject date experimenter _path-to-raw-files]}
+  [{:keys [subject date experimenter path-to-raw-files]}
    behavior-data
    adjusting-data
    template-yaml-data
    data-filepaths]
   (->
     template-yaml-data
-    (assoc :default_header_file_path
-           (str experimenter "/" subject "/" date "/"))
+    (assoc :default_header_file_path (str (.getAbsolutePath (java.io.File. ""))
+                                          "/"
+                                          path-to-raw-files
+                                          "/"
+                                          experimenter
+                                          "/"
+                                          subject
+                                          "/"
+                                          date
+                                          "/"))
     (update :electrode_groups #(update-electrode-groups % date adjusting-data))
     (update :ntrode_electrode_group_channel_map
             #(update-ntrode-electrode-group-channel-map % date adjusting-data))
@@ -398,7 +410,8 @@
     ["-d" "--dates DATE"
      "Date(s) to process data for, separated by commas.  If not specified, "
      "will automatically process data for dates that do not already have a "
-     "yaml file generated for them."
+     "yaml file generated for them.  Right now this doesn't work and you will "
+     "always get 20250602 if you do not specify dates."
      :default []
      :parse-fn #(string/split % #",")]
     ["-y" "--template-yaml-file FILE" "Template yaml file to update."
