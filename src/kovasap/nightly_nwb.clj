@@ -408,10 +408,10 @@
     ["-s" "--subject SUBJECT" "Subject to process data for."]
     ["-e" "--experimenter EXPERIMENTER" "Experimenter to process data for."]
     ["-d" "--dates DATE"
-     "Date(s) to process data for, separated by commas.  If not specified, "
-     "will automatically process data for dates that do not already have a "
-     "yaml file generated for them.  Right now this doesn't work and you will "
-     "always get 20250602 if you do not specify dates."
+     (str "Date(s) to process data for, separated by commas. If not specified, "
+      "will automatically process data for dates that do not already have a "
+      "yaml file generated for them.  Right now this doesn't work and you will "
+      "always get 20250602 if you do not specify dates.")
      :default []
      :parse-fn #(string/split % #",")]
     ["-y" "--template-yaml-file FILE" "Template yaml file to update."
@@ -420,7 +420,8 @@
     ["-o" "--output-yaml-file FILE" "Output yaml file path."
      :default default-output-yaml-filepath
      :validate [#(string/ends-with? % ".yml") "Must be a .yml file."]]
-    ["-n" "--email-to-notify EMAIL" "Email address to send notification emails to."
+    ["-n" "--email-to-notify EMAIL"
+     "Email address to send notification emails to. Not working yet."
      :default nil
      :validate [#(re-matches #".+\@.+\..+" %) "Must be a valid email."]]
     ["-h" "--help"]])

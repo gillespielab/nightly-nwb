@@ -53,10 +53,6 @@ tasks:
       - 3
       - 5
 associated_files:
-  - name: statescript_s1
-    description: Statescript log s1
-    path: /home/gl-willow/banyan/raw/gabby/teddy/20250602/20250602_teddy_01_s1.stateScriptLog
-    task_epochs: 1
   - name: statescript_r1
     description: Statescript log r1
     path: /home/gl-willow/banyan/raw/gabby/teddy/20250602/20250602_teddy_02_r1.stateScriptLog
