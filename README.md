@@ -8,6 +8,19 @@ https://docs.google.com/document/d/1-4OthZDf6QfC_1RTGJRJoN75CL_Ssa7ja-oeSSngIrI/
 
 ## Usage
 
+A built version of this tool exists at
+target/net.clojars.kovasap/nightly-nwb-0.1.0-SNAPSHOT.jar in this repository.
+I also added a copy to the "releases" section of this github page.
+You can download and run it to see the help output like:
+
+    $ java -jar nightly-nwb-0.1.0-SNAPSHOT.jar
+
+A real world example of how to run the tool looks like:
+
+    $ java -jar nightly-nwb-0.1.0-SNAPSHOT.jar generate-yaml -f testdata/raw/ -s teddy -e gabby -d 20250602
+
+## Other Ways to Run
+
 Run the project:
 
     $ clojure -M:run-m
