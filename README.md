@@ -33,4 +33,4 @@ task, unless you remove `version` from `build.clj`.
 
 Run that uberjar:
 
-    $ java -jar target/net.clojars.kovasap/nightly-nwb-0.1.0-SNAPSHOT.jar
+    $ java -jar target/net.clojars.kovasap/nightly-nwb-0.1.0-SNAPSHOT.jar generate-yaml -f testdata/raw/ -s teddy -e gabby -d 20250602
