@@ -6,6 +6,11 @@ How the yaml should be generated:
 
 https://docs.google.com/document/d/1-4OthZDf6QfC_1RTGJRJoN75CL_Ssa7ja-oeSSngIrI/edit?tab=t.0
 
+## Dependencies
+
+This tool uses [`gdrive`](https://github.com/glotlabs/gdrive) to download Google
+Drive data.  Download and install it first before using this tool.
+
 ## Usage
 
 A built version of this tool exists at
