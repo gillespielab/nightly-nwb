@@ -139,7 +139,7 @@
              (map #(state-script-log-file->data %) data-filepaths))))
 
 (def video-file-regex
-  #"(.+)_(.+)_(.+)_(.+)\.2\.h264") 
+  #"(.+)_(.+)_(.+)_(.+)\.(.+)\.h264") 
 
 (defn video-file->data
   [video-file task-letter-to-camera-ids]
