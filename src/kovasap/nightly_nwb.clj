@@ -83,7 +83,7 @@
              [(.getSheetName sheet) sheet])))
 
 (defn download-google-sheet!
-  "Returns true if the download was successful, false otherwise."
+  "Returns path to output xlsx file."
   [google-sheet-id]
   (let [{:keys [out exit err]} (sh "gdrive"
                                    "files"
@@ -374,7 +374,19 @@
         (get-raw-file-paths data-spec))
       (replace-placeholders output-yaml-file data-spec))))
 
-(defn generate-yaml!
+; TODO make this work
+(defn generate-single-nwb!
+  "Returns path to output nwb file."
+  [data-spec output-yaml-file]
+  (let [{:keys [out exit err]} (sh "trodes_to_nwb.py")]
+    (println out)
+    (println err)
+    (println "Done generating nwb")
+    (if (= exit 0)
+      ""
+      (throw (Exception. err)))))
+
+(defn generate-yaml-then-nwb!
   "Returns map like {:success? true :failure-message ''}."
   [{:keys [google-sheet-id
            experimenter
@@ -396,6 +408,7 @@
                                     (download-google-sheet! google-sheet-id)
                                     template-yaml-file
                                     output-yaml-file)
+             (generate-single-nwb! data-spec output-yaml-file)
              (catch Exception e {:success? false :failure-message e})
              (finally {:success? true})))))
 
@@ -432,7 +445,7 @@
         "Usage: nightly-nwb [options] action"
         ""
         "Actions:"
-        "  generate-yaml    Generate a yaml file from a given template."
+        "  generate-yaml-then-nwb    Generate a yaml file from a given template, then generate the nwb file based on the yaml."
         ""
         "Options:"
         options-summary]
@@ -454,7 +467,7 @@
       errors ; errors => exit with description of errors
       {:exit-message (error-msg errors)}
       (and (= 1 (count arguments))
-           (#{"generate-yaml"} (first arguments)))
+           (#{"generate-yaml-then-nwb"} (first arguments)))
       {:action (first arguments) :options options}
       :else ; failed custom validation => exit with usage summary
       {:exit-message (usage summary)})))
@@ -491,6 +504,6 @@
       (if exit-message
         (exit (if ok? 0 1) exit-message)
         (case action
-          "generate-yaml"  (generate-yaml! options)))))
+          "generate-yaml-then-nwb"  (generate-yaml-then-nwb! options)))))
     ; Added so that our use of sh does not hang the program.
   (shutdown-agents))
