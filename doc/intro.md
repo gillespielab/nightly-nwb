@@ -1,3 +1,3 @@
-# Introduction to kovasap/nightly-nwb
+# Introduction to gillespielab/nightly-nwb
 
 TODO: write [great documentation](http://jacobian.org/writing/what-to-write/)

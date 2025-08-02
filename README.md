@@ -1,4 +1,4 @@
-# kovasap/nightly-nwb
+# gillespielab/nightly-nwb
 
 ## Notes
 
@@ -14,7 +14,7 @@ Drive data.  Download and install it first before using this tool.
 ## Usage
 
 A built version of this tool exists at
-target/net.clojars.kovasap/nightly-nwb-0.1.0-SNAPSHOT.jar in this repository.
+target/net.clojars.gillespielab/nightly-nwb-0.1.0-SNAPSHOT.jar in this repository.
 I also added a copy to the "releases" section of this github page.
 You can download and run it to see the help output like:
 
@@ -51,4 +51,4 @@ task, unless you remove `version` from `build.clj`.
 
 Run that uberjar:
 
-    $ java -jar target/net.clojars.kovasap/nightly-nwb-0.1.0-SNAPSHOT.jar generate-yaml -f testdata/raw/ -s teddy -e gabby -d 20250602
+    $ java -jar target/net.clojars.gillespielab/nightly-nwb-0.1.0-SNAPSHOT.jar generate-yaml -f testdata/raw/ -s teddy -e gabby -d 20250602
