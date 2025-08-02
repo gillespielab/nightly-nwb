@@ -53,6 +53,10 @@ A real world example of how to run the tool looks like:
 
     $ java -jar nightly-nwb-0.1.0-SNAPSHOT.jar generate-yaml-then-nwb --yaml-only -d testdata/ -s teddy -e gabby -d 20250602
 
+RIGHT NOW you will need to run this command from the root directory of this
+repository.
+Otherwise it will not know where to find the python nwb generation code.
+
 ## Running Automatically
 
 To run this tool automatically, you can use the built in linux utility `cron`.
