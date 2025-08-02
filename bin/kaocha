@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
+source ~/.virtualenvs/nightly-nwb/bin/activate
 clojure -M:test "$@" --watch --diff-style :minimal

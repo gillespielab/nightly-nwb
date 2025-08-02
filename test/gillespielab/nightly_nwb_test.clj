@@ -80,3 +80,23 @@
           (yaml/parse-string
             (slurp
               "testdata/raw/gabby/teddy/20250602/20250602_teddy_metadata.yml")))))))
+
+(deftest test-determine-dates-to-process
+  (testing "Can correctly determine which dates to process"
+    (is (= (determine-dates-to-process
+             {:experimenter "gabby" :subject "teddy" :root-data-dir "testdata"}
+             default-output-nwb-dir)
+           ["20250602" "20250603"]))))
+
+(deftest test-generate-single-nwb!
+  (testing "Can correctly determine which dates to process"
+    (is
+      (=
+        (generate-single-nwb! {:experimenter  "gabby"
+                               :subject       "teddy"
+                               :date          "20250602"
+                               :root-data-dir "testdata"}
+                              default-output-nwb-dir
+                              :dry-run
+                              true)
+        "Will process data for 20250602 in testdata/raw/gabby/teddy/ and put results in testdata/nwb/raw/.\n"))))

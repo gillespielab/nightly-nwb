@@ -347,14 +347,13 @@
        (:date data-spec)
        ".nwb"))
 
-; TODO test this
 (defn determine-dates-to-process
   "Return list of dates formatted like YYYYMMDD for which nwbs have not been created yet."
   [data-spec output-nwb-dir]
   ; TODO make sure this returns just the date strings
   (as-> data-spec d
     (replace-placeholders path-to-subject-dir d)
-    (.list (io/file d))
+    (.listFiles (io/file d))
     (filter #(.isDirectory %) d)
     (map #(.getName %) d)
     (filter #(not (.exists (io/file (nwb-filepath (assoc data-spec :date %)
@@ -401,17 +400,25 @@
 (defn generate-single-nwb!
   "Returns path to output nwb file."
   [{:keys [date] :as data-spec}
-   output-nwb-dir]
-  (let [{:keys [out exit err]}
-        (sh "python" "single_nwb_conversion.py"
-            "--date" date
-            "--output_dir" output-nwb-dir
-            "--data_directory"
-            (replace-placeholders path-to-subject-dir data-spec))]
-    (println out)
-    (println err)
-    (println "Done generating nwb")
-    (if (= exit 0) "" (throw (Exception. err)))))
+   output-nwb-dir
+   &
+   {:keys [dry-run] :or {dry-run false}}]
+  (let [arguments (remove nil?
+                    ["python"
+                     "single_nwb_conversion.py"
+                     "--date"
+                     date
+                     "--output_dir"
+                     (replace-placeholders output-nwb-dir data-spec)
+                     (if dry-run "--dry_run" nil)
+                     "--data_directory"
+                     (replace-placeholders path-to-subject-dir data-spec)])]
+    (println "Executing " (string/join " " arguments))
+    (let [{:keys [out exit err]} (apply sh arguments)]
+      (println out)
+      (println err)
+      (println "Done generating nwb")
+      (if (= exit 0) out (throw (Exception. err))))))
 
 (defn generate-yaml-then-nwb!
   "Returns map like {:success? true :failure-message ''}."
