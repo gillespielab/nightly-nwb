@@ -64,7 +64,7 @@
       (generate-single-yaml! {:experimenter "gabby"
                               :subject      "teddy"
                               :date         "20250602"
-                              :path-to-raw-files "testdata/raw"}
+                              :root-data-dir "testdata"}
                              "testdata/example.xlsx"
                              default-template-yaml-filepath
                              default-output-yaml-filepath)

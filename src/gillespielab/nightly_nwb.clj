@@ -14,11 +14,17 @@
 
 (def temp-spreadsheet-filepath "out.xlsx")
 
+(def path-to-subject-dir
+  "{{root-data-dir}}/raw/{{experimenter}}/{{subject}}/")
+  
 (def default-template-yaml-filepath
-  "{{path-to-raw-files}}/{{experimenter}}/{{subject}}/{{subject}}_metadata.yml")
+  (str path-to-subject-dir "{{subject}}_metadata.yml"))
 
 (def default-output-yaml-filepath
-  "{{path-to-raw-files}}/{{experimenter}}/{{subject}}/{{date}}/{{date}}_{{subject}}_metadata.yml")
+  (str path-to-subject-dir "{{date}}/{{date}}_{{subject}}_metadata.yml"))
+
+(def default-output-nwb-dir
+  "{{root-data-dir}}/nwb/raw/")
 
 (def behavior-sheet-name
   "{{subject}}_behavior")
@@ -100,10 +106,10 @@
 
 
 (defn get-raw-file-paths
-  [{:keys [date path-to-raw-files]}]
+  [{:keys [date root-data-dir]}]
   (filter
     #(string/includes? (.getAbsolutePath %) date)
-    (file-seq (clojure.java.io/file path-to-raw-files))))
+    (file-seq (clojure.java.io/file root-data-dir))))
 
 (defn get-session-number
   [date behavior-data]
@@ -309,23 +315,18 @@
              :ntrode_id)))
  
 (defn generate-single-yaml-data
-  [{:keys [subject date experimenter path-to-raw-files]}
+  [{:keys [subject date] :as data-spec}
    behavior-data
    adjusting-data
    template-yaml-data
    data-filepaths]
   (->
     template-yaml-data
-    (assoc :default_header_file_path (str (.getAbsolutePath (java.io.File. ""))
-                                          "/"
-                                          path-to-raw-files
-                                          "/"
-                                          experimenter
-                                          "/"
-                                          subject
-                                          "/"
-                                          date
-                                          "/"))
+    (assoc :default_header_file_path
+           (str (.getAbsolutePath (java.io.File. ""))
+                (replace-placeholders path-to-subject-dir data-spec)
+                date
+                "/"))
     (update :electrode_groups #(update-electrode-groups % date adjusting-data))
     (update :ntrode_electrode_group_channel_map
             #(update-ntrode-electrode-group-channel-map % date adjusting-data))
@@ -338,11 +339,30 @@
                                      (get-task-letter-to-camera-ids
                                        (:tasks template-yaml-data))))))
 
-; TODO update this so that it actually lists the files that need generation.
+(defn nwb-filepath
+  [data-spec output-nwb-dir]
+  (str (replace-placeholders output-nwb-dir data-spec)
+       (:experimenter data-spec)
+       (:date data-spec)
+       ".nwb"))
+
+; TODO test this
 (defn determine-dates-to-process
-  "Return list of dates formatted like YYYYMMDD for which there are no yaml files in their directory."
-  [experimenter subject path-to-raw-files]
-  ["20250602"])
+  "Return list of dates formatted like YYYYMMDD for which nwbs have not been created yet."
+  [data-spec output-nwb-dir]
+  ; TODO make sure this returns just the date strings
+  (as-> data-spec d
+    (replace-placeholders path-to-subject-dir d)
+    (.list (io/file d))
+    (filter #(.isDirectory %) d)
+    (map #(.getName %) d)
+    (filter #(not (.exists (io/file (nwb-filepath (assoc data-spec :date %)
+                                                  output-nwb-dir))))
+      d)))
+    ; TODO Check the associated spreadsheet (i.e. the UW_Aging_Cohort
+    ; spreadsheet in teddy's case) for whether this new date should be
+    ; processed: check in the teddy_behavior tab that this date (20250602) has
+    ; an associated session number that is not equal to 0
 
 (defn write-yaml-data-to-file
   [yaml-data filepath]
@@ -357,7 +377,9 @@
 
 (defn generate-single-yaml!
   [data-spec spreadsheet-file template-yaml-file output-yaml-file]
-  (let [sheets-by-name (get-sheets-by-name spreadsheet-file)]
+  (let [sheets-by-name (get-sheets-by-name spreadsheet-file)
+        real-yaml-output-file (replace-placeholders output-yaml-file data-spec)]
+    (println (str "Writing yaml file to " real-yaml-output-file "..."))
     (write-yaml-data-to-file
       (generate-single-yaml-data
         data-spec
@@ -372,19 +394,23 @@
         (yaml/parse-string (slurp (replace-placeholders template-yaml-file
                                                         data-spec)))
         (get-raw-file-paths data-spec))
-      (replace-placeholders output-yaml-file data-spec))))
+      real-yaml-output-file)))
 
-; TODO make this work
+; TODO test this
 (defn generate-single-nwb!
   "Returns path to output nwb file."
-  [data-spec output-yaml-file]
-  (let [{:keys [out exit err]} (sh "trodes_to_nwb.py")]
+  [{:keys [date] :as data-spec}
+   output-nwb-dir]
+  (let [{:keys [out exit err]}
+        (sh "python" "single_nwb_conversion.py"
+            "--date" date
+            "--output_dir" output-nwb-dir
+            "--data_directory"
+            (replace-placeholders path-to-subject-dir data-spec))]
     (println out)
     (println err)
     (println "Done generating nwb")
-    (if (= exit 0)
-      ""
-      (throw (Exception. err)))))
+    (if (= exit 0) "" (throw (Exception. err)))))
 
 (defn generate-yaml-then-nwb!
   "Returns map like {:success? true :failure-message ''}."
@@ -392,39 +418,50 @@
            experimenter
            subject
            dates
+           yaml-only
            template-yaml-file
            output-yaml-file
-           path-to-raw-files]
+           output-nwb-dir
+           root-data-dir]
     :as   options}]
   (println "Starting date processing...")
   (for [date (if (empty? dates)
-               (determine-dates-to-process experimenter
-                                           subject
-                                           path-to-raw-files)
+               (determine-dates-to-process options output-nwb-dir)
                dates)
-        :let [data-spec (assoc options :date date)]]
-    (do (println (str "Processing data for " date "..."))
-        (try (generate-single-yaml! data-spec
-                                    (download-google-sheet! google-sheet-id)
-                                    template-yaml-file
-                                    output-yaml-file)
-             (generate-single-nwb! data-spec output-yaml-file)
-             (catch Exception e {:success? false :failure-message e})
-             (finally {:success? true})))))
+        :let [data-spec (assoc options :date date)
+              real-yaml-template-path (replace-placeholders template-yaml-file
+                                                            data-spec)]]
+    (if (not (.exists (io/file real-yaml-template-path)))
+      (println (str "No yaml template file found at "
+                    real-yaml-template-path
+                    ", not processing date "
+                    date
+                    "."))
+      (do (println (str "Processing data for " date "..."))
+          (try (generate-single-yaml! data-spec
+                                      (download-google-sheet! google-sheet-id)
+                                      template-yaml-file
+                                      output-yaml-file)
+               (if (not yaml-only)
+                 (generate-single-nwb! data-spec output-nwb-dir)
+                 nil)
+               (catch Exception e {:success? false :failure-message e})
+               (finally {:success? true}))))))
 
 (def cli-options
    [["-g" "--google-sheet-id ID" "ID for google sheet to parse."
      :default "1QxgE1NmOHCZbkmkR0kq1E03szCnmwS7VdtZwE8eyrUY"]
-    ["-f" "--path-to-raw-files DIRECTORY"
+    ["-d" "--root-data-dir DIRECTORY"
      "The path to the raw datafiles."
-     :default "banyan/raw/"]
+     :default "banyan/"]
+    ["-y" "--yaml-only" "Only generate the yaml file, not the NWB"
+     :default false]
     ["-s" "--subject SUBJECT" "Subject to process data for."]
     ["-e" "--experimenter EXPERIMENTER" "Experimenter to process data for."]
     ["-d" "--dates DATE"
      (str "Date(s) to process data for, separated by commas. If not specified, "
       "will automatically process data for dates that do not already have a "
-      "yaml file generated for them.  Right now this doesn't work and you will "
-      "always get 20250602 if you do not specify dates.")
+      "yaml file generated for them. ")
      :default []
      :parse-fn #(string/split % #",")]
     ["-y" "--template-yaml-file FILE" "Template yaml file to update."
@@ -433,6 +470,8 @@
     ["-o" "--output-yaml-file FILE" "Output yaml file path."
      :default default-output-yaml-filepath
      :validate [#(string/ends-with? % ".yml") "Must be a .yml file."]]
+    ["-w" "--output-nwb-dir DIR" "Output nwb directory."
+     :default default-output-nwb-dir]
     ["-n" "--email-to-notify EMAIL"
      "Email address to send notification emails to. Not working yet."
      :default nil
