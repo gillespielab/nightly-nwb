@@ -405,7 +405,7 @@
    {:keys [dry-run] :or {dry-run false}}]
   (let [arguments (remove nil?
                     ["python"
-                     "single_nwb_conversion.py"
+                     "nwb_conversion/single_nwb_conversion.py"
                      "--date"
                      date
                      "--output_dir"

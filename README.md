@@ -94,7 +94,7 @@ Run the project's tests:
 Run the project's CI pipeline and build an uberjar (this will fail until you
 edit the tests to pass):
 
-    $ clojure -T:build ci
+    $ bin/build_uberjar.bash
 
 This will produce an updated `pom.xml` file with synchronized dependencies
 inside the `META-INF` directory inside `target/classes` and the uberjar in

@@ -1,6 +1,7 @@
 (ns build
   (:refer-clojure :exclude [test])
-  (:require [clojure.tools.build.api :as b]))
+  (:require [clojure.tools.build.api :as b]
+            [clojure.java.shell :refer [sh]]))
 
 (def lib 'net.clojars.gillespielab/nightly-nwb)
 (def version "0.1.0-SNAPSHOT")
