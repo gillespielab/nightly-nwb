@@ -5,7 +5,7 @@
    [clj-yaml.core :as yaml]
    [postal.core :refer [send-message]]
    [clojure.java.shell :refer [sh]]
-   [clojure.java.io]
+   [clojure.java.io :as io]
    [clojure.tools.cli :refer [parse-opts]])
   (:import [java.text SimpleDateFormat]
            [org.apache.poi.ss.usermodel DateUtil CellType])
@@ -109,7 +109,7 @@
   [{:keys [date root-data-dir]}]
   (filter
     #(string/includes? (.getAbsolutePath %) date)
-    (file-seq (clojure.java.io/file root-data-dir))))
+    (file-seq (io/file root-data-dir))))
 
 (defn get-session-number
   [date behavior-data]
@@ -324,6 +324,7 @@
     template-yaml-data
     (assoc :default_header_file_path
            (str (.getAbsolutePath (java.io.File. ""))
+                "/"
                 (replace-placeholders path-to-subject-dir data-spec)
                 date
                 "/"))
