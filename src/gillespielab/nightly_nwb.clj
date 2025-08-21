@@ -462,7 +462,7 @@
 (def cli-options
    [["-g" "--google-sheet-id ID" "ID for google sheet to parse."
      :default "1QxgE1NmOHCZbkmkR0kq1E03szCnmwS7VdtZwE8eyrUY"]
-    ["-d" "--root-data-dir DIRECTORY"
+    ["-r" "--root-data-dir DIRECTORY"
      "The path to the raw datafiles."
      :default "banyan/"]
     ["-y" "--yaml-only" "Only generate the yaml file, not the NWB"
@@ -475,7 +475,7 @@
       "yaml file generated for them. ")
      :default []
      :parse-fn #(string/split % #",")]
-    ["-y" "--template-yaml-file FILE" "Template yaml file to update."
+    ["-t" "--template-yaml-file FILE" "Template yaml file to update."
      :default default-template-yaml-filepath
      :validate [#(string/ends-with? % ".yml") "Must be a .yml file."]]
     ["-o" "--output-yaml-file FILE" "Output yaml file path."
