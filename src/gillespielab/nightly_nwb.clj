@@ -274,17 +274,16 @@
 
 (defn generate-channel-map-from-dead-channels
   [adjusting-data]
-  (as-> adjusting-data d
-    (filter #(= "dead channels" (:row-header %)) d)
-    (map #(update % :col-header clean-spreadsheet-number) d)
-    (filter #(number? (:col-header %)) d)
-    (remove #(nil? (extract-channel-id (:value %))) d)
+  (->> adjusting-data
+    (filter #(= "dead channels" (:row-header %)))
+    (map #(update % :col-header clean-spreadsheet-number))
+    (filter #(number? (:col-header %)))
+    (remove #(nil? (extract-channel-id (:value %))))
     (map (fn [{:keys [col-header value]}]
            {:ntrode_id col-header
             :electrode_group_id (dec col-header)
-            :bad_channels [(dec (extract-channel-id value))]})
-      d)
-    (sort-by :ntrode_id d)))
+            :bad_channels [(dec (extract-channel-id value))]}))
+    (sort-by :ntrode_id)))
 
 (defn extract-ref-channel-id
   [s]
@@ -295,17 +294,16 @@
 
 (defn generate-channel-map-from-ref-ch
   [date adjusting-data]
-  (as-> adjusting-data d
-    (filter #(= date (:row-header %)) d)
-    (map #(update % :col-header clean-spreadsheet-number) d)
-    (filter #(number? (:col-header %)) d)
-    (remove #(nil? (extract-ref-channel-id (:value %))) d)
+  (->> adjusting-data
+    (filter #(= date (:row-header %)))
+    (map #(update % :col-header clean-spreadsheet-number))
+    (filter #(number? (:col-header %)))
+    (remove #(nil? (extract-ref-channel-id (:value %))))
     (map (fn [{:keys [col-header value]}]
            {:ntrode_id col-header
             :electrode_group_id (dec col-header)
-            :bad_channels [(dec (extract-ref-channel-id value))]})
-      d)
-    (sort-by :ntrode_id d)))
+            :bad_channels [(dec (extract-ref-channel-id value))]}))
+    (sort-by :ntrode_id)))
 
 (defn update-ntrode-electrode-group-channel-map
   [existing-channel-map date adjusting-data]
