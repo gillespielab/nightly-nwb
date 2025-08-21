@@ -286,7 +286,7 @@
   [s]
   (try
     (Integer/parseInt
-     (last (re-matches #"ref_ch: ch(\d)" s)))
+     (last (re-seq #"ref_ch: ch(\d)" s)))
     (catch Exception _ nil)))
 
 (defn generate-channel-map-from-ref-ch
