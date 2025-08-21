@@ -100,6 +100,7 @@
     (println out)
     (println err)
     (println "Done exporting spreadsheet")
+    (println "")
     (if (= exit 0)
       temp-spreadsheet-filepath
       (throw (Exception. err)))))
@@ -538,7 +539,7 @@
 (defn report-errors!
   [email-to-notify status-map]
   (if (nil? email-to-notify)
-    (println status-map)
+    (println (if (nil? status-map) "" status-map))
     (send-email-report!
       email-to-notify
       status-map)))
