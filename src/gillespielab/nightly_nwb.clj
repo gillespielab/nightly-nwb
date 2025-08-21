@@ -205,8 +205,11 @@
 
 (defn update-task-data
   [task-data task-letter-to-epochs]
-  (sort-by #(first (:camera_id %))
-           (map #(add-epochs-to-task % task-letter-to-epochs) task-data)))
+  (->> task-data
+    (map #(add-epochs-to-task % task-letter-to-epochs))
+    ; Remove tasks with no epochs to resolve issue #3
+    (remove #(empty? (:task_epochs %)))
+    (sort-by #(first (:camera_id %)))))
 
 (defn color->location
   [color]
