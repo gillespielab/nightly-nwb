@@ -307,21 +307,20 @@
 
 (defn generate-channel-map-from-ref-ch
   [date adjusting-data]
-  (doto (->> adjusting-data
-             (filter #(= date (:row-header %)))
-             (map #(update % :col-header clean-spreadsheet-number))
-             (filter #(number? (:col-header %)))
-             (remove #(nil? (extract-ref-channel-id (:value %))))
-             (map
-               (fn [{:keys [col-header value]}]
-                 {:ntrode_id          col-header
-                  :electrode_group_id (dec col-header)
-                  :bad_channels       (vec (sort
-                                             (disj all-channels
-                                                   (dec (extract-ref-channel-id
-                                                          value)))))}))
-             (sort-by :ntrode_id))
-    println))
+  (->> adjusting-data
+       (filter #(= date (:row-header %)))
+       (map #(update % :col-header clean-spreadsheet-number))
+       (filter #(number? (:col-header %)))
+       (remove #(nil? (extract-ref-channel-id (:value %))))
+       (map
+         (fn [{:keys [col-header value]}]
+           {:ntrode_id          col-header
+            :electrode_group_id (dec col-header)
+            :bad_channels       (vec (sort
+                                       (disj all-channels
+                                             (dec (extract-ref-channel-id
+                                                    value)))))}))
+       (sort-by :ntrode_id)))
 
 (defn update-ntrode-electrode-group-channel-map
   [existing-channel-map date adjusting-data]
