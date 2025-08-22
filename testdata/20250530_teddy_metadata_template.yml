@@ -809,7 +809,7 @@ ntrode_electrode_group_channel_map:
   - ntrode_id: 8
     electrode_group_id: 7
     bad_channels:
-      - 0
+      - 1
       - 2
       - 3
     map:

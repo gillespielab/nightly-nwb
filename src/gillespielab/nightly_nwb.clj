@@ -1,6 +1,7 @@
 (ns gillespielab.nightly-nwb
   (:require
    [dk.ative.docjure.spreadsheet :as ss]
+   [clojure.set :refer [intersection]]
    [clojure.string :as string]
    [clj-yaml.core :as yaml]
    [postal.core :refer [send-message]]
@@ -251,12 +252,21 @@
 (defn merge-maps
   "Merges maps with matching id-key from maps2 into matching maps1 entries.
 
-  Non matching maps2 entries will be ignored."
+  Non matching maps2 entries will be added to the list of maps without merging
+  with anything (since there was nothing to merge with)."
   [maps1 maps2 id-key]
-  (let [maps2-by-key (group-by id-key maps2)]
-    (into []
-          (for [m maps1]
-            (apply merge m (get maps2-by-key (id-key m)))))))
+  (let [maps2-by-key (group-by id-key maps2)
+        maps1-by-key (group-by id-key maps1)
+        keys-to-merge (intersection (set (keys maps1-by-key))
+                                    (set (keys maps2-by-key)))]
+    (concat
+      ; Elements in maps1 that do not have the same key as maps2
+      (remove #(contains? keys-to-merge (id-key %)) maps1) 
+      ; Elements that exist in both maps1 and maps2 need to be merged
+      (map #(apply merge (concat (get maps1-by-key %)
+                                 (get maps2-by-key %))) keys-to-merge)
+      ; Elements in maps2 that do not have the same key as maps1
+      (remove #(contains? keys-to-merge (id-key %)) maps2)))) 
 
 (defn update-electrode-groups
   [existing-electrode-groups date adjusting-data]
@@ -289,21 +299,29 @@
   [s]
   (try
     (Integer/parseInt
-     (last (re-seq #"ref_ch: ch(\d)" s)))
+     (last (last (re-seq #"ref_ch: ch(\d)" s))))
     (catch Exception _ nil)))
+
+(def all-channels
+  #{0 1 2 3})
 
 (defn generate-channel-map-from-ref-ch
   [date adjusting-data]
-  (->> adjusting-data
-    (filter #(= date (:row-header %)))
-    (map #(update % :col-header clean-spreadsheet-number))
-    (filter #(number? (:col-header %)))
-    (remove #(nil? (extract-ref-channel-id (:value %))))
-    (map (fn [{:keys [col-header value]}]
-           {:ntrode_id col-header
-            :electrode_group_id (dec col-header)
-            :bad_channels [(dec (extract-ref-channel-id value))]}))
-    (sort-by :ntrode_id)))
+  (doto (->> adjusting-data
+             (filter #(= date (:row-header %)))
+             (map #(update % :col-header clean-spreadsheet-number))
+             (filter #(number? (:col-header %)))
+             (remove #(nil? (extract-ref-channel-id (:value %))))
+             (map
+               (fn [{:keys [col-header value]}]
+                 {:ntrode_id          col-header
+                  :electrode_group_id (dec col-header)
+                  :bad_channels       (vec (sort
+                                             (disj all-channels
+                                                   (dec (extract-ref-channel-id
+                                                          value)))))}))
+             (sort-by :ntrode_id))
+    println))
 
 (defn update-ntrode-electrode-group-channel-map
   [existing-channel-map date adjusting-data]
