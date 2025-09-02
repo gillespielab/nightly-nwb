@@ -877,6 +877,7 @@ ntrode_electrode_group_channel_map:
   - ntrode_id: 16
     electrode_group_id: 15
     bad_channels:
+      - 0
       - 2
       - 3
     map:
@@ -1284,7 +1285,11 @@ ntrode_electrode_group_channel_map:
       "3": 3
   - ntrode_id: 64
     electrode_group_id: 63
-    bad_channels: []
+    bad_channels:
+      - 0
+      - 1
+      - 2
+      - 3
     map:
       "0": 0
       "1": 1

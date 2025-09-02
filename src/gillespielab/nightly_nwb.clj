@@ -282,11 +282,10 @@
                        (generate-electrode-groups date adjusting-data)
                        :id)))
 
-(defn extract-channel-id
+(defn extract-channel-ids
   [s]
   (try
-    (Integer/parseInt
-      (last (re-matches #"ch(\d)" s)))
+    (map Integer/parseInt (map last (re-seq #"ch(\d)" s)))
     (catch Exception _ nil)))
 
 (defn generate-channel-map-from-dead-channels
@@ -295,11 +294,11 @@
     (filter #(= "dead channels" (:row-header %)))
     (map #(update % :col-header clean-spreadsheet-number))
     (filter #(number? (:col-header %)))
-    (remove #(nil? (extract-channel-id (:value %))))
+    (remove #(nil? (extract-channel-ids (:value %))))
     (map (fn [{:keys [col-header value]}]
            {:ntrode_id col-header
             :electrode_group_id (dec col-header)
-            :bad_channels [(dec (extract-channel-id value))]}))
+            :bad_channels (vec (sort (map dec (extract-channel-ids value))))}))
     (sort-by :ntrode_id)))
 
 (defn extract-ref-channel-id
