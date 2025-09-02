@@ -263,8 +263,15 @@
       ; Elements in maps1 that do not have the same key as maps2
       (remove #(contains? keys-to-merge (id-key %)) maps1) 
       ; Elements that exist in both maps1 and maps2 need to be merged
-      (map #(apply merge (concat (get maps1-by-key %)
-                                 (get maps2-by-key %))) keys-to-merge)
+      (map #(apply merge-with
+                   (fn [former-val latter-val]
+                     (cond (vector? former-val)
+                           (sort (concat former-val latter-val))
+                           :else latter-val))
+                   (concat
+                    (get maps1-by-key %)
+                    (get maps2-by-key %)))
+           keys-to-merge)
       ; Elements in maps2 that do not have the same key as maps1
       (remove #(contains? keys-to-merge (id-key %)) maps2)))) 
 
