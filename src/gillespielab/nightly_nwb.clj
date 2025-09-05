@@ -108,11 +108,11 @@
 
 
 (defn get-raw-file-paths
-  [{:keys [date root-data-dir subject]}]
-  (->> (file-seq (io/file root-data-dir))
-    (filter #(string/includes? (.getAbsolutePath %) date))
-    (filter #(string/includes? (.getAbsolutePath %) subject))
-    (filter #(string/includes? (.getAbsolutePath %) "raw"))))
+  [{:keys [date root-data-dir] :as data-spec}]
+  (filter #(string/includes?
+             (.getAbsolutePath %)
+             (str (replace-placeholders path-to-subject-dir data-spec) date))
+    (file-seq (io/file root-data-dir))))
 
 (defn get-session-number
   [date behavior-data]
