@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-source ~/.virtualenvs/nightly-nwb/bin/activate
+source mamba activate nightly-nwb
 clojure -M:test "$@" --watch --diff-style :minimal

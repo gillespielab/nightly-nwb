@@ -17,7 +17,7 @@
 
 (def path-to-subject-dir
   "{{root-data-dir}}/raw/{{experimenter}}/{{subject}}/")
-  
+
 (def default-template-yaml-filepath
   (str path-to-subject-dir "{{subject}}_metadata.yml"))
 
@@ -26,9 +26,6 @@
 
 (def default-output-nwb-dir
   "{{root-data-dir}}/nwb/raw/")
-
-(def behavior-sheet-name
-  "{{subject}}_behavior")
 
 (def adjusting-sheet-name
   "{{subject}}_adjusting")
@@ -46,16 +43,16 @@
 (defn get-cell-value
   [cell]
   (cond (nil? cell) nil
-        (and 
-          (= CellType/NUMERIC (.getCellType cell))
-          (DateUtil/isCellDateFormatted cell))
+        (and
+         (= CellType/NUMERIC (.getCellType cell))
+         (DateUtil/isCellDateFormatted cell))
         (.format (SimpleDateFormat. "yyyyMMdd") (.getDateCellValue cell))
         (= CellType/NUMERIC (.getCellType cell)) (.getNumericCellValue cell)
         (empty? (.toString cell)) nil
         :else (.toString cell)))
 
 (defn get-col-header-values
-  "Gets column header values for the given sheet.  The given column-row-idx 
+  "Gets column header values for the given sheet.  The given column-row-idx
   will be used to determine which row should be considered the header row."
   ([sheet column-row-idx]
    (map get-cell-value (ss/cell-seq (nth (ss/row-seq sheet) column-row-idx))))
@@ -68,21 +65,21 @@
   [sheet column-row-idx]
   (let [col-header-values (get-col-header-values sheet column-row-idx)]
     (flatten
-      (for [row  (remove nil? (rest (ss/row-seq sheet)))
-            :let [row-header (get-cell-value (first (ss/cell-seq row)))]
-            :when (not (nil? row-header))]
-        (for [[col-header cell] (zip (rest col-header-values)
-                                     (rest (ss/cell-seq row)))
-              :when (not (nil? col-header))]
-          {:col-header col-header
-           :row-header row-header
-           :value      (get-cell-value cell)
-           :color      (if (nil? cell)
-                         nil
-                         (as-> cell c
-                           (.getCellStyle c)
-                           (.getFillBackgroundXSSFColor c)
-                           (if (nil? c) nil (vec (.getARGB c)))))})))))
+     (for [row  (remove nil? (rest (ss/row-seq sheet)))
+           :let [row-header (get-cell-value (first (ss/cell-seq row)))]
+           :when (not (nil? row-header))]
+       (for [[col-header cell] (zip (rest col-header-values)
+                                    (rest (ss/cell-seq row)))
+             :when (not (nil? col-header))]
+         {:col-header col-header
+          :row-header row-header
+          :value      (get-cell-value cell)
+          :color      (if (nil? cell)
+                        nil
+                        (as-> cell c
+                          (.getCellStyle c)
+                          (.getFillBackgroundXSSFColor c)
+                          (if (nil? c) nil (vec (.getARGB c)))))})))))
 
 (defn get-sheets-by-name
   [workbook-path]
@@ -110,45 +107,45 @@
 (defn get-raw-file-paths
   [{:keys [date root-data-dir] :as data-spec}]
   (filter #(string/includes?
-             (.getAbsolutePath %)
-             (str (replace-placeholders path-to-subject-dir data-spec) date))
-    (file-seq (io/file root-data-dir))))
+            (.getAbsolutePath %)
+            (str (replace-placeholders path-to-subject-dir data-spec) date))
+          (file-seq (io/file root-data-dir))))
 
 (defn get-session-number
-  [date behavior-data]
+  [date adjusting-data]
   (first (filter (fn [{:keys [col-header row-header]}]
-                   (and (= col-header "session")
+                   (and (= col-header "recording_session_id")
                         (= row-header date)))
-                 behavior-data)))
+                 adjusting-data)))
 
 (defn get-session-id
-  [subject date behavior-data]
+  [subject date adjusting-data]
   (format "%s_%02d"
           subject
-          (int (:value (get-session-number date behavior-data)))))
+          (int (:value (get-session-number date adjusting-data)))))
 
 (def state-script-log-regex
-  #"(.+)_(.+)_(.+)_(.+)\.stateScriptLog") 
+  #"(.+)_(.+)_(.+)_(.+)\.stateScriptLog")
 
 (defn state-script-log-file->data
   [state-script-log-file]
   (if-some [[_whole-filename-match _date _subject task-epoch task-code]
             (re-matches state-script-log-regex
                         (.getName state-script-log-file))]
-   {:name (str "statescript_" task-code)
-    :description (str "Statescript log " task-code)
-    :path (.getAbsolutePath state-script-log-file)
-    :task_epochs (Integer/parseInt task-epoch)}
-   nil))
+    {:name (str "statescript_" task-code)
+     :description (str "Statescript log " task-code)
+     :path (.getAbsolutePath state-script-log-file)
+     :task_epochs (Integer/parseInt task-epoch)}
+    nil))
 
 (defn generate-associated-files
   [data-filepaths]
   (sort-by :task_epochs
            (remove nil?
-             (map #(state-script-log-file->data %) data-filepaths))))
+                   (map #(state-script-log-file->data %) data-filepaths))))
 
 (def video-file-regex
-  #"(.+)_(.+)_(.+)_(.+)\.(.+)\.h264") 
+  #"(.+)_(.+)_(.+)_(.+)\.(.+)\.h264")
 
 (defn video-file->data
   [video-file task-letter-to-camera-ids]
@@ -163,14 +160,14 @@
   [data-filepaths task-letter-to-camera-ids]
   (sort-by :task_epochs
            (remove nil?
-             (map #(video-file->data % task-letter-to-camera-ids)
-               data-filepaths))))
+                   (map #(video-file->data % task-letter-to-camera-ids)
+                        data-filepaths))))
 
 
 (defn task-name->letter
   [task-name]
   (case task-name
-    "Sleep" "s" 
+    "Sleep" "s"
     "r"))
 
 
@@ -181,7 +178,7 @@
           [(task-name->letter task_name) (first camera_id)])))
 
 (def rec-regex
-  #"(.+)_(.+)_(.+)_(.+)\.rec") 
+  #"(.+)_(.+)_(.+)_(.+)\.rec")
 
 (defn rec-file-to-letter-epoch
   [rec-file]
@@ -193,26 +190,26 @@
 
 (defn get-task-letter-to-epochs
   [data-filepaths]
-  (as-> data-filepaths d 
+  (as-> data-filepaths d
     (map rec-file-to-letter-epoch d)
     (remove nil? d)
     (group-by :task-letter d)
     (update-vals d #(map :epoch %))))
-          
+
 
 (defn add-epochs-to-task
   [{:keys [task_name] :as task} task-letter-to-epochs]
   (assoc task
-    :task_epochs (sort (get task-letter-to-epochs
-                            (task-name->letter task_name)))))
+         :task_epochs (sort (get task-letter-to-epochs
+                                 (task-name->letter task_name)))))
 
 (defn update-task-data
   [task-data task-letter-to-epochs]
   (->> task-data
-    (map #(add-epochs-to-task % task-letter-to-epochs))
+       (map #(add-epochs-to-task % task-letter-to-epochs))
     ; Remove tasks with no epochs to resolve issue #3
-    (remove #(empty? (:task_epochs %)))
-    (sort-by #(first (:camera_id %)))))
+       (remove #(empty? (:task_epochs %)))
+       (sort-by #(first (:camera_id %)))))
 
 (defn color->location
   [color]
@@ -225,14 +222,14 @@
     (= color [-1 -97 -59 -24]) "can1ref"
     ; Purple
     (= color [-1 -76 -89 -42]) "can2ref"
-    ; Everything else 
+    ; Everything else
     :else "''"))
 
 (defn cell->electrode-group
   [{:keys [col-header color]}]
   ; dec since yaml electrodes are indexed by 0, but spreadsheet is indexed by
   ; 1!
-  {:id (dec col-header)  
+  {:id (dec col-header)
    :location (color->location color)})
 
 (defn clean-spreadsheet-number
@@ -244,11 +241,11 @@
 (defn generate-electrode-groups
   [date adjusting-data]
   (as-> adjusting-data d
-   (filter #(= date (:row-header %)) d)
-   (map #(update % :col-header clean-spreadsheet-number) d)
-   (filter #(number? (:col-header %)) d)
-   (map cell->electrode-group d)
-   (sort-by :id d)))
+    (filter #(= date (:row-header %)) d)
+    (map #(update % :col-header clean-spreadsheet-number) d)
+    (filter #(number? (:col-header %)) d)
+    (map cell->electrode-group d)
+    (sort-by :id d)))
 
 (defn merge-maps
   "Merges maps with matching id-key from maps2 into matching maps1 entries.
@@ -262,19 +259,19 @@
                                     (set (keys maps2-by-key)))]
     (concat
       ; Elements in maps1 that do not have the same key as maps2
-      (remove #(contains? keys-to-merge (id-key %)) maps1) 
+     (remove #(contains? keys-to-merge (id-key %)) maps1)
       ; Elements that exist in both maps1 and maps2 need to be merged
-      (map #(apply merge-with
-                   (fn [former-val latter-val]
-                     (cond (vector? former-val)
-                           (sort (concat former-val latter-val))
-                           :else latter-val))
-                   (concat
-                    (get maps1-by-key %)
-                    (get maps2-by-key %)))
-           keys-to-merge)
+     (map #(apply merge-with
+                  (fn [former-val latter-val]
+                    (cond (vector? former-val)
+                          (sort (concat former-val latter-val))
+                          :else latter-val))
+                  (concat
+                   (get maps1-by-key %)
+                   (get maps2-by-key %)))
+          keys-to-merge)
       ; Elements in maps2 that do not have the same key as maps1
-      (remove #(contains? keys-to-merge (id-key %)) maps2)))) 
+     (remove #(contains? keys-to-merge (id-key %)) maps2))))
 
 (defn update-electrode-groups
   [existing-electrode-groups date adjusting-data]
@@ -292,15 +289,15 @@
 (defn generate-channel-map-from-dead-channels
   [adjusting-data]
   (->> adjusting-data
-    (filter #(= "dead channels" (:row-header %)))
-    (map #(update % :col-header clean-spreadsheet-number))
-    (filter #(number? (:col-header %)))
-    (remove #(nil? (extract-channel-ids (:value %))))
-    (map (fn [{:keys [col-header value]}]
-           {:ntrode_id col-header
-            :electrode_group_id (dec col-header)
-            :bad_channels (vec (sort (map dec (extract-channel-ids value))))}))
-    (sort-by :ntrode_id)))
+       (filter #(= "dead channels" (:row-header %)))
+       (map #(update % :col-header clean-spreadsheet-number))
+       (filter #(number? (:col-header %)))
+       (remove #(nil? (extract-channel-ids (:value %))))
+       (map (fn [{:keys [col-header value]}]
+              {:ntrode_id col-header
+               :electrode_group_id (dec col-header)
+               :bad_channels (vec (sort (map dec (extract-channel-ids value))))}))
+       (sort-by :ntrode_id)))
 
 (defn extract-ref-channel-id
   [s]
@@ -320,51 +317,50 @@
        (filter #(number? (:col-header %)))
        (remove #(nil? (extract-ref-channel-id (:value %))))
        (map
-         (fn [{:keys [col-header value]}]
-           {:ntrode_id          col-header
-            :electrode_group_id (dec col-header)
-            :bad_channels       (vec (sort
-                                       (disj all-channels
-                                             (dec (extract-ref-channel-id
-                                                    value)))))}))
+        (fn [{:keys [col-header value]}]
+          {:ntrode_id          col-header
+           :electrode_group_id (dec col-header)
+           :bad_channels       (vec (sort
+                                     (disj all-channels
+                                           (dec (extract-ref-channel-id
+                                                 value)))))}))
        (sort-by :ntrode_id)))
 
 (defn update-ntrode-electrode-group-channel-map
   [existing-channel-map date adjusting-data]
   (sort-by :ntrode_id
            (merge-maps
-             existing-channel-map
-             (merge-maps
-               (generate-channel-map-from-dead-channels adjusting-data)
-               (generate-channel-map-from-ref-ch date adjusting-data)
-               :ntrode_id)
-             :ntrode_id)))
- 
+            existing-channel-map
+            (merge-maps
+             (generate-channel-map-from-dead-channels adjusting-data)
+             (generate-channel-map-from-ref-ch date adjusting-data)
+             :ntrode_id)
+            :ntrode_id)))
+
 (defn generate-single-yaml-data
   [{:keys [subject date] :as data-spec}
-   behavior-data
    adjusting-data
    template-yaml-data
    data-filepaths]
   (->
-    template-yaml-data
-    (assoc :default_header_file_path
-           (str (.getAbsolutePath (java.io.File. ""))
-                "/"
-                (replace-placeholders path-to-subject-dir data-spec)
-                date
-                "/"))
-    (update :electrode_groups #(update-electrode-groups % date adjusting-data))
-    (update :ntrode_electrode_group_channel_map
-            #(update-ntrode-electrode-group-channel-map % date adjusting-data))
-    (update :tasks
-            #(update-task-data % (get-task-letter-to-epochs data-filepaths)))
-    (assoc :session_id (get-session-id subject date behavior-data))
-    (assoc :associated_files (generate-associated-files data-filepaths))
-    (assoc :associated_video_files (generate-associated-video-files
-                                     data-filepaths
-                                     (get-task-letter-to-camera-ids
-                                       (:tasks template-yaml-data))))))
+   template-yaml-data
+   (assoc :default_header_file_path
+          (str (.getAbsolutePath (java.io.File. ""))
+               "/"
+               (replace-placeholders path-to-subject-dir data-spec)
+               date
+               "/"))
+   (update :electrode_groups #(update-electrode-groups % date adjusting-data))
+   (update :ntrode_electrode_group_channel_map
+           #(update-ntrode-electrode-group-channel-map % date adjusting-data))
+   (update :tasks
+           #(update-task-data % (get-task-letter-to-epochs data-filepaths)))
+   (assoc :session_id (get-session-id subject date adjusting-data))
+   (assoc :associated_files (generate-associated-files data-filepaths))
+   (assoc :associated_video_files (generate-associated-video-files
+                                   data-filepaths
+                                   (get-task-letter-to-camera-ids
+                                    (:tasks template-yaml-data))))))
 
 (defn nwb-filepath
   [data-spec output-nwb-dir]
@@ -384,10 +380,10 @@
     (map #(.getName %) d)
     (filter #(not (.exists (io/file (nwb-filepath (assoc data-spec :date %)
                                                   output-nwb-dir))))
-      d)))
+            d)))
     ; TODO Check the associated spreadsheet (i.e. the UW_Aging_Cohort
     ; spreadsheet in teddy's case) for whether this new date should be
-    ; processed: check in the teddy_behavior tab that this date (20250602) has
+    ; processed: check in the teddy_adjusting tab that this date (20250602) has
     ; an associated session number that is not equal to 0
 
 (defn write-yaml-data-to-file
@@ -407,20 +403,16 @@
         real-yaml-output-file (replace-placeholders output-yaml-file data-spec)]
     (println (str "Writing yaml file to " real-yaml-output-file "..."))
     (write-yaml-data-to-file
-      (generate-single-yaml-data
-        data-spec
-        (get-rows-data (get sheets-by-name
-                            (replace-placeholders behavior-sheet-name
-                                                  data-spec))
-                       0)
-        (get-rows-data (get sheets-by-name
-                            (replace-placeholders adjusting-sheet-name
-                                                  data-spec))
-                       3)
-        (yaml/parse-string (slurp (replace-placeholders template-yaml-file
-                                                        data-spec)))
-        (get-raw-file-paths data-spec))
-      real-yaml-output-file)))
+     (generate-single-yaml-data
+      data-spec
+      (get-rows-data (get sheets-by-name
+                          (replace-placeholders adjusting-sheet-name
+                                                data-spec))
+                     3)
+      (yaml/parse-string (slurp (replace-placeholders template-yaml-file
+                                                      data-spec)))
+      (get-raw-file-paths data-spec))
+     real-yaml-output-file)))
 
 ; TODO test this
 (defn generate-single-nwb!
@@ -430,15 +422,15 @@
    &
    {:keys [dry-run] :or {dry-run false}}]
   (let [arguments (remove nil?
-                    ["python"
-                     "nwb_conversion/single_nwb_conversion.py"
-                     "--date"
-                     date
-                     "--output_dir"
-                     (replace-placeholders output-nwb-dir data-spec)
-                     (if dry-run "--dry_run" nil)
-                     "--data_directory"
-                     (replace-placeholders path-to-subject-dir data-spec)])]
+                          ["python3"
+                           "nwb_conversion/single_nwb_conversion.py"
+                           "--date"
+                           date
+                           "--output_dir"
+                           (replace-placeholders output-nwb-dir data-spec)
+                           (if dry-run "--dry_run" nil)
+                           "--data_directory"
+                           (replace-placeholders path-to-subject-dir data-spec)])]
     (println "Executing " (string/join " " arguments))
     (let [{:keys [out exit err]} (apply sh arguments)]
       (println out)
@@ -483,34 +475,34 @@
                (finally {:success? true}))))))
 
 (def cli-options
-   [["-g" "--google-sheet-id ID" "ID for google sheet to parse."
-     :default "1QxgE1NmOHCZbkmkR0kq1E03szCnmwS7VdtZwE8eyrUY"]
-    ["-r" "--root-data-dir DIRECTORY"
-     "The path to the raw datafiles."
-     :default "banyan/"]
-    ["-y" "--yaml-only" "Only generate the yaml file, not the NWB"
-     :default false]
-    ["-s" "--subject SUBJECT" "Subject to process data for."]
-    ["-e" "--experimenter EXPERIMENTER" "Experimenter to process data for."]
-    ["-d" "--dates DATE"
-     (str "Date(s) to process data for, separated by commas. If not specified, "
-      "will automatically process data for dates that do not already have a "
-      "yaml file generated for them. ")
-     :default []
-     :parse-fn #(string/split % #",")]
-    ["-t" "--template-yaml-file FILE" "Template yaml file to update."
-     :default default-template-yaml-filepath
-     :validate [#(string/ends-with? % ".yml") "Must be a .yml file."]]
-    ["-o" "--output-yaml-file FILE" "Output yaml file path."
-     :default default-output-yaml-filepath
-     :validate [#(string/ends-with? % ".yml") "Must be a .yml file."]]
-    ["-w" "--output-nwb-dir DIR" "Output nwb directory."
-     :default default-output-nwb-dir]
-    ["-n" "--email-to-notify EMAIL"
-     "Email address to send notification emails to. Not working yet."
-     :default nil
-     :validate [#(re-matches #".+\@.+\..+" %) "Must be a valid email."]]
-    ["-h" "--help"]])
+  [["-g" "--google-sheet-id ID" "ID for google sheet to parse."
+    :default "1QxgE1NmOHCZbkmkR0kq1E03szCnmwS7VdtZwE8eyrUY"]
+   ["-r" "--root-data-dir DIRECTORY"
+    "The path to the raw datafiles."
+    :default "banyan/"]
+   ["-y" "--yaml-only" "Only generate the yaml file, not the NWB"
+    :default false]
+   ["-s" "--subject SUBJECT" "Subject to process data for."]
+   ["-e" "--experimenter EXPERIMENTER" "Experimenter to process data for."]
+   ["-d" "--dates DATE"
+    (str "Date(s) to process data for, separated by commas. If not specified, "
+         "will automatically process data for dates that do not already have a "
+         "yaml file generated for them. ")
+    :default []
+    :parse-fn #(string/split % #",")]
+   ["-t" "--template-yaml-file FILE" "Template yaml file to update."
+    :default default-template-yaml-filepath
+    :validate [#(string/ends-with? % ".yml") "Must be a .yml file."]]
+   ["-o" "--output-yaml-file FILE" "Output yaml file path."
+    :default default-output-yaml-filepath
+    :validate [#(string/ends-with? % ".yml") "Must be a .yml file."]]
+   ["-w" "--output-nwb-dir DIR" "Output nwb directory."
+    :default default-output-nwb-dir]
+   ["-n" "--email-to-notify EMAIL"
+    "Email address to send notification emails to. Not working yet."
+    :default nil
+    :validate [#(re-matches #".+\@.+\..+" %) "Must be a valid email."]]
+   ["-h" "--help"]])
 
 (defn usage [options-summary]
   (->> ["Nightly NWB file generator."
@@ -563,8 +555,8 @@
   (if (nil? email-to-notify)
     (println (if (nil? status-map) "" status-map))
     (send-email-report!
-      email-to-notify
-      status-map)))
+     email-to-notify
+     status-map)))
 
 (defn exit [status msg]
   (println msg)
@@ -573,10 +565,10 @@
 (defn -main [& args]
   (let [{:keys [action options exit-message ok?]} (validate-args args)]
     (report-errors!
-      (:email-to-notify options)
-      (if exit-message
-        (exit (if ok? 0 1) exit-message)
-        (case action
-          "generate-yaml-then-nwb"  (generate-yaml-then-nwb! options)))))
+     (:email-to-notify options)
+     (if exit-message
+       (exit (if ok? 0 1) exit-message)
+       (case action
+         "generate-yaml-then-nwb"  (generate-yaml-then-nwb! options)))))
     ; Added so that our use of sh does not hang the program.
   (shutdown-agents))

@@ -23,10 +23,10 @@ tasks:
   camera_id: [1]
   task_epochs: [1, 3, 5]
 associated_files:
-- {name: statescript_r1, description: Statescript log r1, path: /home/kovas/nightly-nwb/testdata/raw/gabby/teddy/20250602/20250602_teddy_02_r1.stateScriptLog, task_epochs: 2}
-- {name: statescript_s2, description: Statescript log s2, path: /home/kovas/nightly-nwb/testdata/raw/gabby/teddy/20250602/20250602_teddy_03_s2.stateScriptLog, task_epochs: 3}
-- {name: statescript_r2, description: Statescript log r2, path: /home/kovas/nightly-nwb/testdata/raw/gabby/teddy/20250602/20250602_teddy_04_r2.stateScriptLog, task_epochs: 4}
-- {name: statescript_s3, description: Statescript log s3, path: /home/kovas/nightly-nwb/testdata/raw/gabby/teddy/20250602/20250602_teddy_05_s3.stateScriptLog, task_epochs: 5}
+- {name: statescript_r1, description: Statescript log r1, path: /home/gl-willow/Documents/gabby/nightly-nwb/testdata/raw/gabby/teddy/20250602/20250602_teddy_02_r1.stateScriptLog, task_epochs: 2}
+- {name: statescript_s2, description: Statescript log s2, path: /home/gl-willow/Documents/gabby/nightly-nwb/testdata/raw/gabby/teddy/20250602/20250602_teddy_03_s2.stateScriptLog, task_epochs: 3}
+- {name: statescript_r2, description: Statescript log r2, path: /home/gl-willow/Documents/gabby/nightly-nwb/testdata/raw/gabby/teddy/20250602/20250602_teddy_04_r2.stateScriptLog, task_epochs: 4}
+- {name: statescript_s3, description: Statescript log s3, path: /home/gl-willow/Documents/gabby/nightly-nwb/testdata/raw/gabby/teddy/20250602/20250602_teddy_05_s3.stateScriptLog, task_epochs: 5}
 associated_video_files:
 - {name: 20250602_teddy_01_s1.2.h264, camera_id: 1, task_epochs: 1}
 - {name: 20250602_teddy_02_r1.2.h264, camera_id: 0, task_epochs: 2}
@@ -36,7 +36,7 @@ associated_video_files:
 units: {analog: unspecified, behavioral_events: unspecified}
 times_period_multiplier: 1.5
 raw_data_to_volts: 1.95E-7
-default_header_file_path: /home/kovas/nightly-nwb/testdata/raw/gabby/teddy/20250602/
+default_header_file_path: /home/gl-willow/Documents/gabby/nightly-nwb/testdata/raw/gabby/teddy/20250602/
 behavioral_events:
 - {description: Dout1, name: homelight}
 - {description: Din1, name: homebeam}

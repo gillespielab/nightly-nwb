@@ -12,15 +12,15 @@ NOTE that usually the "proper" way to install this library is through some
 virtual environment or package manager like conda.  An example of how to do this:
 
 ```
-sudo apt install python3-virtualenvwrapper
-mkvirtualenv nightly-nwb
+mamba create -n nightly-nwb
+mamba activate nightly-nwb
 pip install trodes_to_nwb
 ```
 
 This will put you in the `nightly-nwb` virtual environment in your terminal, which will give you visibility to a version of python that can use `trodes_to_nwb`.  Test that this works via:
 
 ```
-python3 batch_nwb_conversion.py
+python3 nwb_conversion/batch_nwb_conversion.py
 ```
 
 You should get:
@@ -34,10 +34,8 @@ In the future, whenever you want to run nightly-nwb, make sure you are in this
 virtual environment by running:
 
 ```
-workon nightly-nwb
+mamba activate nightly-nwb
 ```
-
-See documentation at https://virtualenvwrapper.readthedocs.io/en/latest/.
 
 Feel free to use another virtual environment management system if you prefer.
 
