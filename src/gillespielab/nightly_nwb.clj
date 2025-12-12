@@ -106,10 +106,22 @@
 
 (defn get-raw-file-paths
   [{:keys [date root-data-dir] :as data-spec}]
-  (filter #(string/includes?
-            (.getAbsolutePath %)
-            (str (replace-placeholders path-to-subject-dir data-spec) date))
-          (file-seq (io/file root-data-dir))))
+  ;; (filter #(string/includes?
+  ;;           (.getAbsolutePath %)
+  ;;           (str (replace-placeholders path-to-subject-dir data-spec) date))
+  ;;         (file-seq (io/file root-data-dir))))
+  (let [subject-dir (replace-placeholders path-to-subject-dir data-spec)
+        all-files (file-seq (io/file root-data-dir))]
+    (println "Looking for files in folder:" subject-dir)
+    (let [matching-files (filter #(string/includes?
+                                   (.getAbsolutePath %)
+                                   (str subject-dir date))
+                                 all-files)]
+      (println "Detected .rec files:")
+      (doseq [f matching-files]
+        (when (.endsWith (.getName f) ".rec")
+          (println (.getAbsolutePath f))))
+      matching-files)))
 
 (defn get-session-number
   [date adjusting-data]
@@ -182,11 +194,26 @@
 
 (defn rec-file-to-letter-epoch
   [rec-file]
-  (if-some [[_whole-filename-match _date _subject task-epoch task-code]
-            (re-matches rec-regex
-                        (.getName rec-file))]
-    {:task-letter (subs task-code 0 1) :epoch (Integer/parseInt task-epoch)}
-    nil))
+  ;; (if-some [[_whole-filename-match _date _subject task-epoch task-code]
+  ;;           (re-matches rec-regex
+  ;;                       (.getName rec-file))]
+  ;;   ;; {:task-letter (subs task-code 0 1) :epoch (Integer/parseInt task-epoch)}
+  ;;   ;; nil))
+  ;;   (do
+  ;;     (println "Matched rec file:" (.getName rec-file))  ;; <-- print here
+  ;;     {:task-letter (subs task-code 0 1)
+  ;;      :epoch (Integer/parseInt task-epoch)})
+  ;;   (do
+  ;;     (println "Did NOT match rec file:" (.getName rec-file)) ;; optional: see failures
+  ;;     nil)))
+  (let [filename (.getName rec-file)]
+    (when (and (re-matches rec-regex filename)
+               (not (.endsWith filename "_premerge.rec")))  ;; exclude _premerge.rec files
+      (let [[_whole-filename-match _date _subject task-epoch task-code]
+            (re-matches rec-regex filename)]
+        (println "Matched rec file:" filename)
+        {:task-letter (subs task-code 0 1)
+         :epoch (Integer/parseInt task-epoch)}))))
 
 (defn get-task-letter-to-epochs
   [data-filepaths]
